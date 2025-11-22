@@ -10,13 +10,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   </head>
   <body>
-    <!-- Your normal website content -->
+    <!-- Minimal content with transparent background -->
     <main class="page-content">
-      <h1>Welcome to Montfort ICSE, Manapparai</h1>
-      <p>
-        Use the chat button at the bottom-right to talk to our AI assistant for
-        basic school information.
-      </p>
+      <!-- Content removed as requested -->
     </main>
 
     <!-- Floating Chat Button -->
@@ -57,19 +53,6 @@
 
       <div id="chat-messages" class="chat-messages"></div>
 
-      <div id="chat-typing" class="chat-typing hidden">
-        <div class="typing-avatar">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-          </svg>
-        </div>
-        <div class="typing-indicator">
-          <span class="dot"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
-        </div>
-      </div>
-
       <form id="chat-form" class="chat-input-area" autocomplete="off">
         <div class="input-wrapper">
           <input
@@ -88,6 +71,20 @@
         </div>
       </form>
     </section>
+
+    <!-- Audio elements for sound effects -->
+    <audio id="typing-sound" preload="auto">
+      <source src="audio/typing.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="delivered-sound" preload="auto">
+      <source src="audio/delivered.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="open-sound" preload="auto">
+      <source src="audio/open.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="close-sound" preload="auto">
+      <source src="audio/close.mp3" type="audio/mpeg">
+    </audio>
 
     <!-- Scripts (order matters) -->
     <script src="config/settings.js"></script>

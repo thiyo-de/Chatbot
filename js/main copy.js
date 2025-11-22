@@ -15,6 +15,16 @@
   let dataEntries = [];
 
   // =====================
+  // URL AUTO-LINK FUNCTION
+  // =====================
+  function linkify(text) {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.replace(urlRegex, (url) => {
+      return `<a href="${url}" target="_blank">${url}</a>`;
+    });
+  }
+
+  // =====================
   // HELPER FUNCTIONS
   // =====================
 
@@ -33,12 +43,10 @@
     return greetings.some((g) => t === g || t.startsWith(g));
   }
 
-  // Use keyword if present, otherwise fall back to question
   function getLabel(entry) {
     return (entry.keyword || entry.question || "School info").trim();
   }
 
-  // Text used for searching (keyword + question fallback)
   function getSearchText(entry) {
     return (entry.keyword || entry.question || "").toLowerCase();
   }
@@ -53,7 +61,12 @@
 
     const bubble = document.createElement("div");
     bubble.className = "message-bubble";
-    bubble.textContent = text;
+
+    if (role === "bot") {
+      bubble.innerHTML = linkify(text); // clickable URLs
+    } else {
+      bubble.textContent = text; // safe for user
+    }
 
     row.appendChild(bubble);
     messagesEl.appendChild(row);
@@ -80,17 +93,17 @@
     try {
       const res = await fetch("data/school-data.json");
       if (!res.ok) throw new Error("Failed to load JSON data");
-      let json = await res.json();
+      const json = await res.json();
 
       if (!Array.isArray(json)) {
         throw new Error("JSON must be an array");
       }
 
-      // 🔹 Ensure each entry has a keyword (fallback = question)
-      dataEntries = json.map((entry) => {
-        const keyword = entry.keyword || entry.question || "";
-        return { ...entry, keyword };
-      });
+      // keyword fallback for ALL entries
+      dataEntries = json.map((entry) => ({
+        ...entry,
+        keyword: entry.keyword || entry.question || "",
+      }));
 
       console.log(`[MontfortChat] Loaded ${dataEntries.length} entries.`);
     } catch (err) {
@@ -116,7 +129,7 @@
       const welcome =
         "Hello! 👋 I’m the Montfort ICSE school assistant.\n\n" +
         "You can ask me about admissions, fees, transport, academics, timings, and other basic school details.\n" +
-        "For official and latest information, please visit:\nhttps://montforticse.in/";
+        "For official information, please visit:\nhttps://montforticse.in/";
 
       showBotMessage(welcome);
     }
@@ -132,7 +145,7 @@
   closeBtn.addEventListener("click", closeChat);
 
   // =====================
-  // MAIN MESSAGE HANDLER
+  // MAIN CHAT HANDLER
   // =====================
 
   async function handleUserMessage(rawInput) {
@@ -141,309 +154,162 @@
 
     showUserMessage(trimmed);
     window.ChatbotContext.addToHistory("user", trimmed);
+    setTyping(true);
 
-    // ---- Greeting ----
+    // GREETING
     if (isGreeting(trimmed)) {
-      const greetReply =
-        "Hi there! 👋 I’m the Montfort ICSE assistant.\n\n" +
-        "Ask me about admissions, fee details, timings, transport, and more.\n" +
-        "For full details: https://montforticse.in/";
-      showBotMessage(greetReply);
-      window.ChatbotContext.addToHistory("assistant", greetReply);
+      showBotMessage(
+        "Hi there! 👋 Ask me about admissions, fees, timings, transport, and more.\nVisit https://montforticse.in/ for full details."
+      );
+      setTyping(false);
       return;
     }
 
-    setTyping(true);
-
     try {
       const state = window.ChatbotContext.getState();
-
-      // ✅ Safer follow-up logic:
-      // Only merge with previous if the new question is very short (like "for 7th?" / "and hostel?")
       const currentTokens = window.ChatbotUtils.tokenize(trimmed);
-      const isShortFollowUp =
+
+      const isShort =
         state.lastUserMessage &&
         state.lastUserMessage !== trimmed &&
         currentTokens.length > 0 &&
         currentTokens.length <= 3;
 
-      const combined = isShortFollowUp
+      const combined = isShort
         ? `${state.lastUserMessage} ${trimmed}`
         : trimmed;
 
-      // 1) Normalize spelling / language via Gemini
+      // Normalize spelling + grammar
       const normalized = await window.GeminiService.normalizeUserQuery(
         combined
       );
-      const lowerNormalized = normalized.toLowerCase();
+      const normalizedLower = normalized.toLowerCase().trim();
 
-      // =====================================================
-      // 🔹 SPECIAL CASE: TIMING QUERIES (school vs office)
-      //  - "timing" (generic) → show ALL timings
-      //  - "school timing" → only school timings
-      //  - "office timing" → only office timings
-      // =====================================================
-      if (lowerNormalized.includes("timing")) {
-        const asksSchool = lowerNormalized.includes("school");
-        const asksOffice = lowerNormalized.includes("office");
+      // ===============================
+      // EXACT MATCH (highest priority)
+      // ===============================
 
-        // Get all timing-related entries (check keyword/question text)
-        const timingEntries = dataEntries.filter((entry) => {
-          const text = getSearchText(entry);
-          return text.includes("timing");
-        });
+      const exactMatch = dataEntries.find((entry) => {
+        const q = (entry.question || "").toLowerCase().trim();
+        return q === normalizedLower;
+      });
 
-        if (timingEntries.length > 0) {
-          // ✅ Generic timing → show ALL timings
-          if (!asksSchool && !asksOffice) {
-            let response = "Here are the timing details:\n\n";
+      if (exactMatch) {
+        const friendly =
+          await window.GeminiService.rephraseAnswer(exactMatch.answer);
 
-            for (const entry of timingEntries) {
-              const friendly = await window.GeminiService.rephraseAnswer(
-                entry.answer
-              );
-              response += `• ${getLabel(entry)}:\n${friendly}\n\n`;
-            }
-
-            setTyping(false);
-            const finalText = response.trim();
-            showBotMessage(finalText);
-            window.ChatbotContext.updateLastInteraction(
-              trimmed,
-              timingEntries.map((m) => getLabel(m)).join(", "),
-              "[timings]"
-            );
-            window.ChatbotContext.addToHistory("assistant", finalText);
-            return;
-          }
-
-          // ✅ Specific: school timing only
-          if (asksSchool && !asksOffice) {
-            const schoolTimingEntry = timingEntries.find((entry) => {
-              const text = getSearchText(entry);
-              return text.includes("school");
-            });
-
-            if (schoolTimingEntry) {
-              window.ChatbotContext.updateLastInteraction(
-                trimmed,
-                getLabel(schoolTimingEntry),
-                schoolTimingEntry.answer
-              );
-
-              const friendlyAnswer =
-                await window.GeminiService.rephraseAnswer(
-                  schoolTimingEntry.answer
-                );
-
-              setTyping(false);
-              showBotMessage(friendlyAnswer);
-              window.ChatbotContext.addToHistory("assistant", friendlyAnswer);
-              return;
-            }
-          }
-
-          // ✅ Specific: office timing only
-          if (asksOffice && !asksSchool) {
-            const officeTimingEntry = timingEntries.find((entry) => {
-              const text = getSearchText(entry);
-              return text.includes("office");
-            });
-
-            if (officeTimingEntry) {
-              window.ChatbotContext.updateLastInteraction(
-                trimmed,
-                getLabel(officeTimingEntry),
-                officeTimingEntry.answer
-              );
-
-              const friendlyAnswer =
-                await window.GeminiService.rephraseAnswer(
-                  officeTimingEntry.answer
-                );
-
-              setTyping(false);
-              showBotMessage(friendlyAnswer);
-              window.ChatbotContext.addToHistory("assistant", friendlyAnswer);
-              return;
-            }
-          }
-
-          // Fallback: show all timing entries
-          let response = "Here are the timing details:\n\n";
-          for (const entry of timingEntries) {
-            const friendly = await window.GeminiService.rephraseAnswer(
-              entry.answer
-            );
-            response += `• ${getLabel(entry)}:\n${friendly}\n\n`;
-          }
-
-          setTyping(false);
-          const finalText = response.trim();
-          showBotMessage(finalText);
-          window.ChatbotContext.updateLastInteraction(
-            trimmed,
-            timingEntries.map((m) => getLabel(m)).join(", "),
-            "[timings]"
-          );
-          window.ChatbotContext.addToHistory("assistant", finalText);
-          return;
-        }
+        setTyping(false);
+        showBotMessage(friendly);
+        return;
       }
 
-      // From here on, use tokens for other generic logic
+      // ===============================
+      // TOKEN-BASED MATCHING
+      // ===============================
+
       const tokens = window.ChatbotUtils.tokenize(normalized);
 
-      // ========================================
-      // 🔹 CASE 1: SINGLE GENERIC KEYWORD (e.g. "admission")
-      // → show all relevant entries whose keyword/question contains that word
-      // ========================================
+      // --- SINGLE KEYWORD ---
       if (tokens.length === 1) {
-        const t = tokens[0].toLowerCase();
+        const t = tokens[0];
 
-        const wideMatches = dataEntries.filter((entry) => {
-          const text = getSearchText(entry);
-          return text.includes(t);
-        });
+        const matches = dataEntries.filter((entry) =>
+          getSearchText(entry).includes(t)
+        );
 
-        if (wideMatches.length >= 2) {
-          let response = "Here are the details I found:\n\n";
-
-          for (const entry of wideMatches) {
-            const friendly = await window.GeminiService.rephraseAnswer(
-              entry.answer
-            );
-            response += `• ${getLabel(entry)}:\n${friendly}\n\n`;
+        if (matches.length >= 2) {
+          let out = "Here are the details I found:\n\n";
+          for (const entry of matches) {
+            const friendly =
+              await window.GeminiService.rephraseAnswer(entry.answer);
+            out += `• ${getLabel(entry)}:\n${friendly}\n\n`;
           }
 
           setTyping(false);
-          const finalText = response.trim();
-          showBotMessage(finalText);
-          window.ChatbotContext.addToHistory("assistant", finalText);
+          showBotMessage(out.trim());
           return;
         }
 
-        if (wideMatches.length === 1) {
-          const chosen = wideMatches[0];
-
-          window.ChatbotContext.updateLastInteraction(
-            trimmed,
-            getLabel(chosen),
-            chosen.answer
-          );
-
-          const friendlyAnswer =
-            await window.GeminiService.rephraseAnswer(chosen.answer);
+        if (matches.length === 1) {
+          const entry = matches[0];
+          const friendly =
+            await window.GeminiService.rephraseAnswer(entry.answer);
 
           setTyping(false);
-          showBotMessage(friendlyAnswer);
-          window.ChatbotContext.addToHistory("assistant", friendlyAnswer);
+          showBotMessage(friendly);
           return;
         }
       }
 
-      // ========================================
-      // 🔹 CASE 2: TWO-WORD GENERIC QUERY (e.g. "admission fees")
-      // → show all entries whose keyword/question contains BOTH words
-      // ========================================
+      // --- TWO KEYWORDS ---
       if (tokens.length === 2) {
-        const lowerTokens = tokens.map((t) => t.toLowerCase());
         const bothMatches = dataEntries.filter((entry) => {
           const text = getSearchText(entry);
-          return lowerTokens.every((t) => text.includes(t));
+          return tokens.every((t) => text.includes(t));
         });
 
         if (bothMatches.length >= 2) {
-          let response = "Here are the details I found:\n\n";
-
+          let out = "Here are the details I found:\n\n";
           for (const entry of bothMatches) {
-            const friendly = await window.GeminiService.rephraseAnswer(
-              entry.answer
-            );
-            response += `• ${getLabel(entry)}:\n${friendly}\n\n`;
+            const friendly =
+              await window.GeminiService.rephraseAnswer(entry.answer);
+            out += `• ${getLabel(entry)}:\n${friendly}\n\n`;
           }
 
           setTyping(false);
-          const finalText = response.trim();
-          showBotMessage(finalText);
-          window.ChatbotContext.addToHistory("assistant", finalText);
+          showBotMessage(out.trim());
           return;
         }
 
         if (bothMatches.length === 1) {
-          const chosen = bothMatches[0];
-
-          window.ChatbotContext.updateLastInteraction(
-            trimmed,
-            getLabel(chosen),
-            chosen.answer
-          );
-
-          const friendlyAnswer =
-            await window.GeminiService.rephraseAnswer(chosen.answer);
+          const entry = bothMatches[0];
+          const friendly =
+            await window.GeminiService.rephraseAnswer(entry.answer);
 
           setTyping(false);
-          showBotMessage(friendlyAnswer);
-          window.ChatbotContext.addToHistory("assistant", friendlyAnswer);
+          showBotMessage(friendly);
           return;
         }
       }
 
-      // ========================================
-      // 🔹 CASE 3: AI-MEANING MATCH
-      // Use Gemini to pick the BEST matching entry by meaning
-      // ========================================
-      if (dataEntries && dataEntries.length > 0) {
-        // Use keyword or question as the candidate text
-        const candidateKeywords = dataEntries.map(
-          (e) => e.keyword || e.question || ""
-        );
+      // ===============================
+      // SEMANTIC MATCH
+      // ===============================
 
+      if (dataEntries.length > 0) {
+        const keys = dataEntries.map((e) => e.keyword || e.question);
         const bestIndex =
           await window.GeminiService.pickBestCandidateKeyword(
             normalized,
-            candidateKeywords
+            keys
           );
 
-        if (
-          typeof bestIndex === "number" &&
-          bestIndex >= 0 &&
-          bestIndex < dataEntries.length
-        ) {
-          const chosen = dataEntries[bestIndex];
-
-          window.ChatbotContext.updateLastInteraction(
-            trimmed,
-            getLabel(chosen),
-            chosen.answer
-          );
-
-          const friendlyAnswer =
-            await window.GeminiService.rephraseAnswer(chosen.answer);
+        if (bestIndex !== null && bestIndex >= 0) {
+          const entry = dataEntries[bestIndex];
+          const friendly =
+            await window.GeminiService.rephraseAnswer(entry.answer);
 
           setTyping(false);
-          showBotMessage(friendlyAnswer);
-          window.ChatbotContext.addToHistory("assistant", friendlyAnswer);
+          showBotMessage(friendly);
           return;
         }
       }
 
-      // ========================================
-      // 🔹 CASE 4: FALLBACK TO GENERAL AI
-      // ========================================
-      const generalReply =
+      // ===============================
+      // FALLBACK
+      // ===============================
+
+      const fallback =
         await window.GeminiService.answerGeneralQuestion(trimmed);
 
       setTyping(false);
-      showBotMessage(generalReply);
-      window.ChatbotContext.addToHistory("assistant", generalReply);
+      showBotMessage(fallback);
     } catch (err) {
       console.error("[MontfortChat] Error:", err);
       setTyping(false);
-      const fallback =
-        "Something went wrong. Please try again.\nVisit https://montforticse.in/ for more details.";
-      showBotMessage(fallback);
-      window.ChatbotContext.addToHistory("assistant", fallback);
+      showBotMessage(
+        "Something went wrong. Please try again.\nVisit https://montforticse.in/."
+      );
     }
   }
 
@@ -455,6 +321,5 @@
     handleUserMessage(value);
   });
 
-  // INIT
   loadData();
 })();
