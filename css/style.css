@@ -19,8 +19,6 @@ body {
   padding: 0 1rem;
 }
 
-/* Floating button */
-
 .chat-toggle {
   position: fixed;
   bottom: 1.75rem;
@@ -74,8 +72,6 @@ body {
   }
 }
 
-/* Chat widget with glassmorphism effect */
-
 .chat-widget {
   position: fixed;
   right: 1.5rem;
@@ -101,7 +97,6 @@ body {
   display: none;
 }
 
-/* Fixed Header - Proper sizing */
 .chat-header {
   padding: 1rem 1.25rem;
   display: flex;
@@ -190,8 +185,6 @@ body {
 .action-btn:hover {
   background: rgba(255, 255, 255, 0.25);
 }
-
-/* Messages area */
 
 .chat-messages {
   flex: 1;
@@ -284,7 +277,6 @@ body {
   border-bottom-left-radius: 6px;
 }
 
-/* FIXED: Realistic typing indicator in chat area - now properly sized */
 .typing-message {
   display: flex;
   gap: 0.75rem;
@@ -318,7 +310,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  max-width: 85%; /* FIX: Added to match message bubble width */
+  max-width: 85%;
 }
 
 .typing-indicator {
@@ -354,7 +346,6 @@ body {
   }
 }
 
-/* NEW: Character-by-character typing animation */
 .typing-text {
   display: inline-block;
   overflow: hidden;
@@ -369,8 +360,6 @@ body {
     border-right-color: transparent;
   }
 }
-
-/* Input area */
 
 .chat-input-area {
   padding: 1rem 1.25rem;
@@ -437,8 +426,6 @@ body {
   transform: scale(0.98);
 }
 
-/* Small screens */
-
 @media (max-width: 480px) {
   .chat-widget {
     right: 0.5rem;
@@ -470,11 +457,10 @@ body {
   }
 
   .typing-bubble {
-    max-width: 90%; /* FIX: Added for mobile consistency */
+    max-width: 90%;
   }
 }
 
-/* Animation for new messages */
 @keyframes messageSlideIn {
   from {
     opacity: 0;
@@ -490,7 +476,6 @@ body {
   animation: messageSlideIn 0.3s ease-out;
 }
 
-/* Scrollbar styling */
 .chat-messages::-webkit-scrollbar {
   width: 4px;
 }

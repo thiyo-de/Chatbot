@@ -10,26 +10,21 @@
         (function () {
   const head = document.head;
 
-  const link1 = document.createElement("link");
-  link1.rel = "stylesheet";
-  link1.href = "css/style.css";
-  head.appendChild(link1);
+  function addLink(rel, href, extra = {}) {
+    const el = document.createElement("link");
+    el.rel = rel;
+    el.href = href;
+    Object.assign(el, extra);
+    head.appendChild(el);
+  }
 
-  const pre1 = document.createElement("link");
-  pre1.rel = "preconnect";
-  pre1.href = "https://fonts.googleapis.com";
-  head.appendChild(pre1);
-
-  const pre2 = document.createElement("link");
-  pre2.rel = "preconnect";
-  pre2.href = "https://fonts.gstatic.com";
-  pre2.crossOrigin = "anonymous";
-  head.appendChild(pre2);
-
-  const googleFont = document.createElement("link");
-  googleFont.href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap";
-  googleFont.rel = "stylesheet";
-  head.appendChild(googleFont);
+  addLink("stylesheet", "https://cdn.jsdelivr.net/gh/thiyo-de/Chatbot/css/style.css");
+  addLink("preconnect", "https://fonts.googleapis.com");
+  addLink("preconnect", "https://fonts.gstatic.com", { crossOrigin: "anonymous" });
+  addLink(
+    "stylesheet",
+    "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+  );
 
   const body = document.body;
 
@@ -40,43 +35,38 @@
   const chatToggle = document.createElement("button");
   chatToggle.id = "chat-toggle";
   chatToggle.className = "chat-toggle";
+  chatToggle.style.zIndex = "99999";
   chatToggle.setAttribute("aria-label", "Open Montfort Assistant");
   chatToggle.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
-      viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" 
-      stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-      </svg>
-      <span class="pulse-ring"></span>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+    <span class="pulse-ring"></span>
   `;
   body.appendChild(chatToggle);
 
   const widget = document.createElement("section");
   widget.id = "chat-widget";
   widget.className = "chat-widget hidden";
+  widget.style.zIndex = "99999";
   widget.setAttribute("aria-hidden", "true");
-  widget.setAttribute("aria-label", "Montfort ICSE Assistant");
 
   const header = document.createElement("header");
   header.className = "chat-header";
   header.innerHTML = `
     <div class="chat-avatar">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" 
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
       viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5
-          a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 1 1 2-2h14a2 2 0 0 1 2 2z"></path>
       </svg>
     </div>
-
     <div class="chat-header-text">
       <h2>Montfort ICSE Assistant</h2>
-      <p class="status">
-        <span class="status-indicator"></span> Online
-      </p>
+      <p class="status"><span class="status-indicator"></span> Online</p>
     </div>
-
-    <button id="chat-close" class="action-btn" aria-label="Close chat">
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" 
+    <button id="chat-close" class="action-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
       viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <line x1="18" y1="6" x2="6" y2="18"></line>
         <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -94,58 +84,48 @@
   form.id = "chat-form";
   form.className = "chat-input-area";
   form.setAttribute("autocomplete", "off");
-
   form.innerHTML = `
-      <div class="input-wrapper">
-        <input id="chat-input" type="text"
-          placeholder="Type your question here..."
-          aria-label="Chat input" required />
-        <button type="submit" class="send-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
-          viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"></line>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-          </svg>
-        </button>
-      </div>
+    <div class="input-wrapper">
+      <input id="chat-input" type="text"
+        placeholder="Type your question here..." required />
+      <button type="submit" class="send-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
   `;
   widget.appendChild(form);
 
   body.appendChild(widget);
 
-  const audioTyping = document.createElement("audio");
-  audioTyping.id = "typing-sound";
-  audioTyping.innerHTML = `<source src="audio/typing.mp3" type="audio/mpeg">`;
-  body.appendChild(audioTyping);
+  function addAudio(id, file) {
+    const audio = document.createElement("audio");
+    audio.id = id;
+    audio.innerHTML = `<source src="${file}" type="audio/mpeg">`;
+    body.appendChild(audio);
+  }
 
-  const audioDelivered = document.createElement("audio");
-  audioDelivered.id = "delivered-sound";
-  audioDelivered.innerHTML = `<source src="audio/delivered.mp3" type="audio/mpeg">`;
-  body.appendChild(audioDelivered);
-
-  const audioOpen = document.createElement("audio");
-  audioOpen.id = "open-sound";
-  audioOpen.innerHTML = `<source src="audio/open.mp3" type="audio/mpeg">`;
-  body.appendChild(audioOpen);
-
-  const audioClose = document.createElement("audio");
-  audioClose.id = "close-sound";
-  audioClose.innerHTML = `<source src="audio/close.mp3" type="audio/mpeg">`;
-  body.appendChild(audioClose);
+  addAudio("typing-sound", "https://cdn.jsdelivr.net/gh/thiyo-de/Chatbot/audio/typing.mp3");
+  addAudio("delivered-sound", "https://cdn.jsdelivr.net/gh/thiyo-de/Chatbot/audio/delivered.mp3");
+  addAudio("open-sound", "https://cdn.jsdelivr.net/gh/thiyo-de/Chatbot/audio/open.mp3");
+  addAudio("close-sound", "https://cdn.jsdelivr.net/gh/thiyo-de/Chatbot/audio/close.mp3");
 
   function loadScript(src) {
     const s = document.createElement("script");
     s.src = src;
+    s.style.zIndex = "99999";
     document.body.appendChild(s);
   }
 
-  loadScript("config/settings.js");
-  loadScript("js/utils.js");
-  loadScript("js/context.js");
-  loadScript("js/gemini.js");
-  loadScript("js/search.js");
-  loadScript("js/main.js");
+  loadScript("https://cdn.jsdelivr.net/gh/thiyo-de/Chatbot/config/settings.js");
+  loadScript("https://cdn.jsdelivr.net/gh/thiyo-de/Chatbot/js/utils.js");
+  loadScript("https://cdn.jsdelivr.net/gh/thiyo-de/Chatbot/js/context.js");
+  loadScript("https://cdn.jsdelivr.net/gh/thiyo-de/Chatbot/js/gemini.js");
+  loadScript("https://cdn.jsdelivr.net/gh/thiyo-de/Chatbot/js/search.js");
+  loadScript("https://cdn.jsdelivr.net/gh/thiyo-de/Chatbot/js/main.js");
 })();
 
     </script>
