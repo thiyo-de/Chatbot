@@ -1,0 +1,38 @@
+montfort-chatbot/
+│
+├── frontend/
+│   ├── index.html
+│   ├── css/
+│   │   └── style.css
+│   ├── js/
+│   │   ├── ui.js                 ← UI logic only
+│   │   ├── chat.js               ← Sends question to backend
+│   │   ├── sound.js              ← Typing/open/close sounds
+│   │   └── config.js             ← Frontend settings
+│   ├── assets/
+│   │   ├── typing.mp3
+│   │   ├── delivered.mp3
+│   │   └── open.mp3
+│   │   └── close.mp3
+│   └── data/
+│       └── (empty – no JSON here) 
+│
+├── backend/
+│   ├── server.js                 ← Express backend
+│   ├── routers/
+│   │   └── chatRoute.js          ← /api/chat endpoint
+│   ├── rag/
+│   │   ├── semantic-search.js    ← cosine similarity
+│   │   ├── embeddings.json       ← auto-generated vectors
+│   │   ├── school-data.json      ← your original 1000 Q&A
+│   │   └── generate-embeddings.js← Node tool to build embeddings
+│   ├── controllers/
+│   │   └── chatController.js     ← embedding match + LLM rewrite
+│   ├── services/
+│   │   └── geminiService.js      ← API calls securely
+│   ├── config/
+│   │   └── env.js                ← API keys & settings
+│   ├── package.json
+│   └── .env                      ← GEMINI_API_KEY (hidden)
+│
+└── README.md

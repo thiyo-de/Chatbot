@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Montfort ICSE Chatbot</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <main class="page-content">
+      <button id="chat-toggle" class="chat-toggle-btn" aria-label="Open Montfort Chatbot">
+        Chat with us
+      </button>
+
+      <section id="chat-widget" class="chat-widget hidden" aria-hidden="true">
+        <header class="chat-header">
+          <div class="chat-title">
+            Montfort ICSE Assistant
+          </div>
+          <button id="chat-close" class="chat-close-btn" aria-label="Close chat">×</button>
+        </header>
+
+        <div id="chat-messages" class="chat-messages"></div>
+
+        <form id="chat-form" class="chat-form">
+          <textarea
+            id="chat-input"
+            class="chat-input"
+            rows="1"
+            placeholder="Ask about admissions, hostel, fees, transport..."
+          ></textarea>
+          <button type="submit" class="chat-send-btn">Send</button>
+        </form>
+      </section>
+
+      <!-- Audio (optional) -->
+      <audio id="typing-sound" src="assets/typing.mp3" preload="auto"></audio>
+      <audio id="delivered-sound" src="assets/delivered.mp3" preload="auto"></audio>
+      <audio id="open-sound" src="assets/open.mp3" preload="auto"></audio>
+      <audio id="close-sound" src="assets/close.mp3" preload="auto"></audio>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script src="js/sound.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/chat.js"></script>
+  </body>
+</html>
