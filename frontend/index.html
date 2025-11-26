@@ -2,39 +2,114 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Montfort ICSE Chatbot</title>
     <link rel="stylesheet" href="css/style.css" />
   </head>
+
   <body>
     <main class="page-content">
-      <button id="chat-toggle" class="chat-toggle-btn" aria-label="Open Montfort Chatbot">
-        Chat with us
+      <!-- Floating Action Button -->
+      <button
+        id="chat-toggle"
+        class="chat-toggle-btn"
+        aria-label="Open Montfort Chatbot"
+      >
+        <img
+          src="assets/logo.svg"
+          alt="Chat"
+          class="chat-icon"
+          width="24"
+          height="24"
+        />
+        <span class="pulse"></span>
       </button>
 
-      <section id="chat-widget" class="chat-widget hidden" aria-hidden="true">
+      <!-- Chat Widget -->
+      <section
+        id="chat-widget"
+        class="chat-widget hidden"
+        aria-hidden="true"
+      >
         <header class="chat-header">
           <div class="chat-title">
-            Montfort ICSE Assistant
+            <div class="chat-avatar">
+              <img
+                src="assets/logo.svg"
+                alt="Montfort ICSE"
+                width="24"
+                height="24"
+              />
+            </div>
+            <div class="chat-title-text">
+              <h2>Montfort ICSE Assistant</h2>
+              <p class="status">Online • Ready to help</p>
+            </div>
           </div>
-          <button id="chat-close" class="chat-close-btn" aria-label="Close chat">×</button>
+          <button
+            id="chat-close"
+            class="chat-close-btn"
+            aria-label="Close chat"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M18 6L6 18"></path>
+              <path d="M6 6l12 12"></path>
+            </svg>
+          </button>
         </header>
 
         <div id="chat-messages" class="chat-messages"></div>
 
         <form id="chat-form" class="chat-form">
-          <textarea
-            id="chat-input"
-            class="chat-input"
-            rows="1"
-            placeholder="Ask about admissions, hostel, fees, transport..."
-          ></textarea>
-          <button type="submit" class="chat-send-btn">Send</button>
+          <div class="input-container">
+            <textarea
+              id="chat-input"
+              class="chat-input"
+              rows="1"
+              placeholder="Ask Anything..."
+            ></textarea>
+            <button
+              type="submit"
+              class="chat-send-btn"
+              aria-label="Send message"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M22 2L11 13" />
+                <path d="M22 2L15 22L11 13L2 9L22 2Z" />
+              </svg>
+            </button>
+          </div>
+          <p class="chat-hint">
+            Try: "admission process" or "hostel facilities"
+          </p>
         </form>
       </section>
 
-      <!-- Audio (optional) -->
-      <audio id="typing-sound" src="assets/typing.mp3" preload="auto"></audio>
-      <audio id="delivered-sound" src="assets/delivered.mp3" preload="auto"></audio>
+      <!-- Sounds -->
+      <audio
+        id="typing-sound"
+        src="assets/typing.mp3"
+        preload="auto"
+      ></audio>
+      <audio
+        id="delivered-sound"
+        src="assets/delivered.mp3"
+        preload="auto"
+      ></audio>
       <audio id="open-sound" src="assets/open.mp3" preload="auto"></audio>
       <audio id="close-sound" src="assets/close.mp3" preload="auto"></audio>
     </main>

@@ -544,10 +544,6 @@
     "answer": "Basic self-defense training may be a part of extracurricular activities. 7. PERSONAL DEVICES & UTILITIES"
   },
   {
-    "question": "Are mobile phones allowed for students?",
-    "answer": "No, mobile phones are strictly not allowed for students unless officially permitted."
-  },
-  {
     "question": "Can students use laptops inside the hostel?",
     "answer": "Laptop use is restricted and only allowed for academic purposes with prior approval."
   },
@@ -576,12 +572,28 @@
     "answer": "The official Montfort ICSE website is https://montforticse.in/."
   },
   {
-    "question": "What is the address of Montfort ICSE School?",
+    "question": "School Address?",
     "answer": "The school is located at Church Hill Road, Yercaud, Salem Dt – 636601."
+  },
+  {
+    "question": "School Location?",
+    "answer": "The school is located at Church Hill Road, Yercaud, Salem Dt – 636601."
+  },
+  {
+    "question": "School Timing?",
+    "answer": "Our School Timing is 9.00 AM - 6.00 PM"
+  },
+  {
+    "question": "Is your institution co-educational",
+    "answer": "Yes, Our School is co-education"
   },
   {
     "question": "What is the phone number of Montfort ICSE School?",
     "answer": "You can contact the school by phone at +91 4281 222428."
+  },
+  {
+    "question": "What is the Mobile number of Montfort ICSE School?",
+    "answer": "You can contact the school by Mobile at +91 4281 222428."
   },
   {
     "question": "What is the WhatsApp number for Montfort ICSE School?",
@@ -590,6 +602,10 @@
   {
     "question": "What is the email address of Montfort ICSE School?",
     "answer": "The official school email is principal@montfortyercaud.com."
+  },
+  {
+    "question": "What are the complete contact details of Montfort ICSE School?",
+    "answer": "You can contact Montfort ICSE School through the following: Phone: +91 4281 222428, Mobile: +91 4281 222428, WhatsApp: 90944 56788, and Email: principal@montfortyercaud.com."
   },
   {
     "question": "What is the official YouTube channel of Montfort ICSE?",
@@ -618,6 +634,10 @@
   {
     "question": "Are lockers provided for personal belongings?",
     "answer": "Yes, students have personal storage spaces assigned in hostel."
+  },
+  {
+    "question": "What Clubs in Montfort",
+    "answer": "Montfort offers several activity clubs such as - Montfort Eco Club , Computer Club of Montfort , Dance Club , Equestrian Club"
   },
   {
     "question": "Are students allowed to bring their own study lamps?",
@@ -654,10 +674,6 @@
   {
     "question": "Are exchange programs available for international exposure?",
     "answer": "Yes, cultural or academic exchange activities may be arranged."
-  },
-  {
-    "question": "Do students celebrate multicultural festivals?",
-    "answer": "Yes, the school respects and celebrates cultural diversity."
   },
   {
     "question": "Can international parents track student progress online?",
@@ -904,10 +920,6 @@
     "answer": "Yes, students receive guidance on organizing time, assignments, and exam preparation. 14. HOSTEL LIFE & COMFORT"
   },
   {
-    "question": "Are hostel rooms shared or individual?",
-    "answer": "Rooms are shared based on student age and dorm structure."
-  },
-  {
     "question": "How many students stay in one room?",
     "answer": "Room occupancy typically ranges from 4 to 10 students depending on dorm type."
   },
@@ -924,10 +936,6 @@
     "answer": "Limited decoration is allowed while maintaining discipline and cleanliness."
   },
   {
-    "question": "Are birthdays or festivals celebrated in the hostel?",
-    "answer": "Yes, simple celebrations are conducted under staff supervision."
-  },
-  {
     "question": "Are there fixed timings for lights out, meals, study, and recreation?",
     "answer": "Yes, a structured daily routine is followed inside the hostel."
   },
@@ -938,10 +946,6 @@
   {
     "question": "Are hostel bathrooms and hygiene facilities regularly maintained?",
     "answer": "Yes, cleaning and maintenance are done regularly for hygiene."
-  },
-  {
-    "question": "Is Wi-Fi available in the hostel?",
-    "answer": "Wi-Fi is limited and monitored strictly for academic use."
   },
   {
     "question": "Are hostel common rooms available for relaxation?",
@@ -962,10 +966,6 @@
   {
     "question": "Is night-time supervision available in the hostel?",
     "answer": "Yes, wardens and security staff supervise throughout the night."
-  },
-  {
-    "question": "Is hostel attendance taken daily?",
-    "answer": "Yes, attendance is taken during morning and night roll-calls."
   },
   {
     "question": "Are parents allowed to stay inside the hostel during visits?",
@@ -1287,12 +1287,10 @@
     "question": "Is there a special coordinator for international student admissions?",
     "answer": "Yes, admission staff assist NRI and foreign parents during the entire process."
   },
-
   {
     "question": "What is the official website link?",
     "answer": "The official Montfort ICSE website is https://montforticse.in/"
   },
-
   {
     "question": "Can students transfer from foreign boards like CBSE International, IGCSE, or IB?",
     "answer": "Yes, students may transfer depending on document verification and class availability."
@@ -1436,5 +1434,50 @@
   {
     "question": "What is the school’s vision for its graduates?",
     "answer": "To create disciplined, confident, resilient, and socially responsible young citizens."
-  }
+  },
+  {
+  "question": "Are textbooks and notebooks provided by the school?",
+  "answer": "Yes, the school provides textbooks and notebooks as per the prescribed syllabus, and they are distributed at the beginning of the academic year."
+},
+{
+  "question": "Is there a canteen on the campus?",
+  "answer": "Yes, the campus has a canteen that provides safe and hygienic food and refreshments for students and staff."
+},
+{
+  "question": "What is available in the school canteen?",
+  "answer": "The school canteen offers hygienic and student-friendly food options such as snacks, beverages, and simple hot meals prepared under proper supervision."
+},
+{
+  "question": "Does the school have a volleyball court?",
+  "answer": "Yes, the school has a well-maintained volleyball court where students can practice and participate in training sessions and matches."
+},
+{
+  "question": "How many cots are there in each hostel room?",
+  "answer": "Hostel rooms typically have 4 to 10 cots, depending on the room size and dormitory structure."
+},
+{
+  "question": "What is the cost of the hostel?",
+  "answer": "For the latest hostel fee details, please visit the official website of Montfort ICSE School."
+},
+{
+  "question": "How many labs are there on the campus?",
+  "answer": "The campus has well-equipped labs for science, computer studies, and other practical subjects to support hands-on learning."
+},
+{
+  "question": "Do hostel students receive snacks?",
+  "answer": "Yes, hostel students are provided with breakfast, lunch, evening snacks, and dinner every day."
+},
+{
+  "question": "How many classrooms are there on the campus?",
+  "answer": "The campus has multiple well-ventilated and fully equipped classrooms designed to support effective learning across all grade levels."
+},
+{
+  "question": "What science labs are available on the campus?",
+  "answer": "The campus includes dedicated Physics, Chemistry, and Biology labs, all equipped with the necessary instruments for practical learning."
+},
+{
+  "question": "Is Wi-Fi available on the campus?",
+  "answer": "Yes, Wi-Fi is available in designated areas of the campus, mainly for academic and administrative use with proper monitoring."
+}
+
 ]

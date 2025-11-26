@@ -1,8 +1,12 @@
-// 1. COSINE SIMILARITY
+// rag/semantic-search.js — FINAL TOKEN + SEMANTIC ENGINE
+
+/* ---------------------------------------------------------
+   COSINE SIMILARITY
+--------------------------------------------------------- */
 export function cosineSimilarity(a, b) {
-  let dot = 0;
-  let normA = 0;
-  let normB = 0;
+  if (!a || !b || !a.length || !b.length) return 0;
+
+  let dot = 0, normA = 0, normB = 0;
   const len = Math.min(a.length, b.length);
 
   for (let i = 0; i < len; i++) {
@@ -10,53 +14,87 @@ export function cosineSimilarity(a, b) {
     normA += a[i] * a[i];
     normB += b[i] * b[i];
   }
-
   if (!normA || !normB) return 0;
+
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
-// 2. SIMPLE TOKENIZER
+/* ---------------------------------------------------------
+   TOKENIZER (safe)
+--------------------------------------------------------- */
 function tokenize(text) {
   return (text || "")
     .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
     .split(/\s+/)
     .filter(Boolean);
 }
 
-// 3. KEYWORD OVERLAP SCORE (0–1)
-function keywordOverlapScore(userTokens, entryTokens) {
+/* ---------------------------------------------------------
+   KEYWORD SCORE
+--------------------------------------------------------- */
+function keywordScore(userTokens, entryTokens) {
   if (!userTokens.length || !entryTokens.length) return 0;
 
-  let matches = 0;
+  let match = 0;
   for (const t of userTokens) {
-    if (entryTokens.includes(t)) matches += 1;
+    if (entryTokens.includes(t)) match++;
   }
-
-  return matches / userTokens.length;
+  return match / userTokens.length;
 }
 
-// 4. HYBRID BEST MATCH
+/* ---------------------------------------------------------
+   BEST MATCH (Single)
+--------------------------------------------------------- */
 export function findBestMatch(userVector, entries, userQuery = "") {
+  const userTokens = tokenize((userQuery || "").toLowerCase());
+
   let best = null;
   let bestScore = -Infinity;
 
-  const userTokens = tokenize(userQuery);
+  const short = userTokens.length <= 2;
+  const SEM_WEIGHT = short ? 0.55 : 0.65;  // semantic more important
+  const KEY_WEIGHT = short ? 0.45 : 0.35;
 
   for (const entry of entries) {
-    if (!entry.vector || !entry.vector.length) continue;
+    if (!entry.vector?.length) continue;
 
-    const semanticScore = cosineSimilarity(userVector, entry.vector);
-    const entryTokens = tokenize(entry.question || entry.keyword || "");
-    const kScore = keywordOverlapScore(userTokens, entryTokens);
+    const semantic = cosineSimilarity(userVector, entry.vector);
+    const entryTokens = tokenize(entry.keyword || entry.question || "");
 
-    const finalScore = 0.6 * semanticScore + 0.4 * kScore;
+    const key = keywordScore(userTokens, entryTokens);
+    const score = semantic * SEM_WEIGHT + key * KEY_WEIGHT;
 
-    if (finalScore > bestScore) {
-      bestScore = finalScore;
+    if (score > bestScore) {
+      bestScore = score;
       best = entry;
     }
   }
 
   return { best, score: bestScore };
+}
+
+/* ---------------------------------------------------------
+   TOP MATCHES (Category mode)
+--------------------------------------------------------- */
+export function findTopMatches(userVector, entries, userQuery = "", limit = 5) {
+  const userTokens = tokenize((userQuery || "").toLowerCase());
+  const results = [];
+
+  for (const entry of entries) {
+    if (!entry.vector?.length) continue;
+
+    const semantic = cosineSimilarity(userVector, entry.vector);
+    const entryTokens = tokenize(entry.keyword || entry.question || "");
+
+    const key = keywordScore(userTokens, entryTokens);
+
+    const score =
+      semantic * 0.60 +   // semantic dominates
+      key * 0.40;         // token match still matters
+
+    results.push({ ...entry, _score: score });
+  }
+
+  return results.sort((a, b) => b._score - a._score).slice(0, limit);
 }

@@ -1,142 +1,211 @@
+// services/geminiService.js — FINAL SAFE VERSION (NO GUESSING, NO HALLUCINATION)
+
 import { ENV } from "../config/env.js";
 
 const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 const EMBED_MODEL = "text-embedding-004";
+const CHAT_MODEL = ENV.GEMINI_MODEL || "gemini-1.5-flash";
 
 /* ---------------------------------------------------------
-   Core Gemini Caller (generateContent)
+   INTERNAL GEMINI CALLER
 --------------------------------------------------------- */
-async function callGemini(textPrompt, systemInstruction) {
+async function callGemini(prompt, instruction = "") {
   if (!ENV.GEMINI_API_KEY) {
-    throw new Error("GEMINI_API_KEY missing");
+    console.error("[Gemini] Missing API key");
+    return "";
   }
 
-  const url = `${BASE_URL}/${ENV.GEMINI_MODEL}:generateContent?key=${encodeURIComponent(
+  const url = `${BASE_URL}/${CHAT_MODEL}:generateContent?key=${encodeURIComponent(
     ENV.GEMINI_API_KEY
   )}`;
 
-  const fullPrompt = systemInstruction
-    ? `${systemInstruction}\n\n${textPrompt}`
-    : textPrompt;
+  const finalPrompt = instruction
+    ? `${instruction}\n\nUSER: ${prompt}`
+    : prompt;
 
   const body = {
-    contents: [
-      {
-        role: "user",
-        parts: [{ text: fullPrompt }],
-      },
-    ],
+    contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
     generationConfig: {
-      temperature: 0.3,
-      maxOutputTokens: 256,
+      temperature: 0.15, // lower = no guessing, no hallucination
+      maxOutputTokens: 200,
     },
   };
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-
-  if (!res.ok) {
-    const txt = await res.text();
-    console.error("[Gemini] HTTP error", res.status, txt);
-    throw new Error("Gemini generateContent failed");
-  }
-
-  const data = await res.json();
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
-}
-
-/* ---------------------------------------------------------
-   Normalize Question
---------------------------------------------------------- */
-export async function normalizeQuestion(raw) {
-  const systemInstruction =
-    "Fix grammar/spelling ONLY for the user's question. Do NOT answer. " +
-    "Do NOT change the core meaning. Return only the corrected question.";
-
   try {
-    const out = await callGemini(raw, systemInstruction);
-    return out || raw;
-  } catch (e) {
-    console.error("[Gemini] normalizeQuestion failed:", e);
-    return raw;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      console.error("[Gemini] HTTP error", res.status, await res.text());
+      return "";
+    }
+
+    const data = await res.json();
+    return data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+  } catch (err) {
+    console.error("[Gemini] callGemini error:", err);
+    return "";
   }
 }
 
 /* ---------------------------------------------------------
-   Rephrase Answer (Friendly)
+   SPELLING CORRECTION — SAFE FOR LOW-LITERACY USERS
+   ❗ No guessing unfamiliar words
 --------------------------------------------------------- */
-export async function rephraseAnswer(answer) {
-  const systemInstruction =
-    "Rewrite this SCHOOL FAQ answer in simple, friendly English. " +
-    "Do NOT add, remove, or change any facts. Keep the meaning exactly the same. " +
-    "Return within 2–4 short sentences.";
+export async function correctSpelling(text) {
+  if (!text) return "";
+
+  const cleaned = text.trim();
+  if (!cleaned) return cleaned;
+
+  const wc = cleaned.split(/\s+/).length;
+
+  // ❗ 1-word queries should NEVER be corrected
+  //    ("wifi", "hostel", "fees", "canteen", "timing")
+  if (wc === 1) return cleaned.toLowerCase();
+
+  // ❗ If any word is long and weird → DO NOT correct
+  const tooCorrupted = cleaned
+    .split(/\s+/)
+    .some((w) => w.length > 10 || /[^a-zA-Z]/.test(w));
+
+  if (tooCorrupted) return cleaned.toLowerCase();
+
+  const inst = `
+Correct ONLY simple spelling mistakes.
+Do NOT guess complicated, unfamiliar, or unclear words.
+Do NOT replace words with similar-sounding alternatives.
+Do NOT change the meaning.
+Return ONLY the corrected text.
+`;
 
   try {
-    const out = await callGemini(answer, systemInstruction);
-    return out || answer;
-  } catch (e) {
-    console.error("[Gemini] rephraseAnswer failed:", e);
-    return answer;
+    const out = await callGemini(cleaned, inst);
+    return out || cleaned;
+  } catch {
+    return cleaned;
   }
 }
 
 /* ---------------------------------------------------------
-   LLM fallback
+   MEANING NORMALIZER — Category-Safe
+   ❗ Never rewrite < 3 words
+   ❗ Never guess unclear words
 --------------------------------------------------------- */
-export async function answerGeneralQuestion(question) {
-  const systemInstruction =
-    "You are the Montfort ICSE school assistant.\n\n" +
-    "- If the question is about Montfort ICSE / fees / timings / admissions / contact / address / rules or any SCHOOL-SPECIFIC detail, " +
-    "you MUST NOT guess. In that case, return ONLY:\n" +
-    "\"I don’t have that information in my data. Please visit https://montforticse.in/ or contact the school office for official details.\"\n\n" +
-    "- If the question is general (not school-related), answer normally in simple English.\n" +
-    "- Return ONLY the final answer text.";
+export async function normalizeToMeaning(text) {
+  if (!text) return "";
+
+  const cleaned = text.trim();
+  if (!cleaned) return cleaned;
+
+  const wc = cleaned.split(/\s+/).length;
+
+  // ❗ DO NOT rewrite category queries:
+  //    ("wifi available", "fees", "hostel", "admission")
+  if (wc <= 2) return cleaned.toLowerCase();
+
+  // ❗ Do NOT normalize if corruption detected
+  const tooCorrupted = cleaned
+    .split(/\s+/)
+    .some((w) => w.length > 10 || /[^a-zA-Z]/.test(w));
+
+  if (tooCorrupted) return cleaned.toLowerCase();
+
+  const inst = `
+Rewrite the user's message into a clear, complete question.
+Fix grammar ONLY if all words are valid English.
+Do NOT guess unclear or misspelled words.
+Do NOT add new meaning.
+Do NOT answer the question.
+Return only the rewritten question.
+`;
 
   try {
-    const out = await callGemini(question, systemInstruction);
+    const out = await callGemini(cleaned, inst);
+    return out || cleaned;
+  } catch {
+    return cleaned;
+  }
+}
+
+/* ---------------------------------------------------------
+   CATEGORY SUMMARY — Safe summarizer
+--------------------------------------------------------- */
+export async function summarizeAnswers(text) {
+  const inst = `
+Summarize these school answers into simple bullet points.
+Do NOT add new facts.
+Do NOT guess missing information.
+Keep it accurate and parent-friendly.
+Return only the summary text.
+`;
+  try {
+    const out = await callGemini(text, inst);
+    return out || text;
+  } catch {
+    return text;
+  }
+}
+
+/* ---------------------------------------------------------
+   GENERAL QUESTIONS — Safe fallback
+--------------------------------------------------------- */
+export async function answerGeneralQuestion(text) {
+  const inst = `
+If the question is related to Montfort ICSE School AND information is missing,
+reply EXACTLY:
+"I don’t have that information in my data. Please visit https://montforticse.in/ or contact the school office for official details."
+
+If it is a general question (not about the school), answer normally.
+
+Return ONLY the final answer.
+`;
+
+  try {
+    const out = await callGemini(text, inst);
     return (
       out ||
-      "I’m not able to answer that now. Please visit https://montforticse.in/ for official details."
+      "I don’t have that information in my data. Please visit https://montforticse.in/ or contact the school office for official details."
     );
-  } catch (e) {
-    console.error("[Gemini] answerGeneralQuestion failed:", e);
-    return "I’m not able to answer that now. Please visit https://montforticse.in/ for official details.";
+  } catch {
+    return "I don’t have that information in my data. Please visit https://montforticse.in/ for official details.";
   }
 }
 
 /* ---------------------------------------------------------
-   Create Embeddings (single vector per QA)
+   EMBEDDINGS API
 --------------------------------------------------------- */
 export async function embedText(text) {
   if (!ENV.GEMINI_API_KEY) {
-    throw new Error("GEMINI_API_KEY missing");
+    console.error("[Gemini] Missing GEMINI_API_KEY for embeddings");
+    return [];
   }
 
   const url = `${BASE_URL}/${EMBED_MODEL}:embedContent?key=${encodeURIComponent(
     ENV.GEMINI_API_KEY
   )}`;
 
-  const body = {
-    content: {
-      parts: [{ text }],
-    },
-  };
+  const body = { content: { parts: [{ text }] } };
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
 
-  if (!res.ok) {
-    const txt = await res.text();
-    console.error("[Gemini] embedText HTTP error", res.status, txt);
-    throw new Error("Gemini embedContent failed");
+    if (!res.ok) {
+      console.error("[embedText Error]", await res.text());
+      return [];
+    }
+
+    const data = await res.json();
+    return data?.embedding?.values || [];
+  } catch (err) {
+    console.error("[embedText catch]", err);
+    return [];
   }
-
-  const data = await res.json();
-  return data?.embedding?.values || [];
 }

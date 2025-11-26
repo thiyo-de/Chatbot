@@ -3,6 +3,8 @@
   const toggleBtn = document.getElementById("chat-toggle");
   const closeBtn = document.getElementById("chat-close");
   const messagesEl = document.getElementById("chat-messages");
+  const inputEl = document.getElementById("chat-input");
+  const sendBtn = document.querySelector(".chat-send-btn");
 
   if (!widget || !toggleBtn || !closeBtn || !messagesEl) {
     console.error("[UI] Missing DOM elements");
@@ -10,6 +12,18 @@
   }
 
   let isTyping = false;
+
+  function setInputDisabled(disabled) {
+    if (!inputEl || !sendBtn) return;
+    inputEl.disabled = disabled;
+    sendBtn.disabled = disabled;
+
+    if (disabled) {
+      inputEl.classList.add("input-disabled");
+    } else {
+      inputEl.classList.remove("input-disabled");
+    }
+  }
 
   function scrollToBottom() {
     setTimeout(() => {
@@ -20,8 +34,13 @@
   function linkify(text) {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     return text.replace(urlRegex, (url) => {
-      return `<a href="${url}" target="_blank" style="color:#2563eb;text-decoration:underline;">${url}</a>`;
+      return `<a href="${url}" target="_blank" style="color:#3b82f6;text-decoration:underline;font-weight:500;">${url}</a>`;
     });
+  }
+
+  function getCurrentTime() {
+    const now = new Date();
+    return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
   function createMessageRow(role, text) {
@@ -32,17 +51,19 @@
     avatar.className = "message-avatar";
 
     if (role === "user") {
+      // Keep simple user icon
       avatar.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
           <circle cx="12" cy="7" r="4"></circle>
         </svg>`;
     } else {
-      avatar.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-        </svg>`;
+      // BOT: use logo.svg instead of message icon
+      avatar.innerHTML = `<img src="assets/logo.svg" alt="Montfort ICSE">`;
     }
+
+    const content = document.createElement("div");
+    content.className = "message-content";
 
     const bubble = document.createElement("div");
     bubble.className = "message-bubble";
@@ -52,8 +73,15 @@
       bubble.textContent = text;
     }
 
+    const time = document.createElement("div");
+    time.className = "message-time";
+    time.textContent = getCurrentTime();
+
+    content.appendChild(bubble);
+    content.appendChild(time);
+    
     row.appendChild(avatar);
-    row.appendChild(bubble);
+    row.appendChild(content);
     messagesEl.appendChild(row);
     scrollToBottom();
     if (window.ChatSounds) window.ChatSounds.delivered();
@@ -63,16 +91,16 @@
     if (isTyping) return;
     isTyping = true;
 
+    setInputDisabled(true);
+
     const row = document.createElement("div");
     row.className = "typing-message";
     row.id = "typing-indicator";
 
     const avatar = document.createElement("div");
     avatar.className = "typing-avatar";
-    avatar.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-      viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-      </svg>`;
+    // BOT typing avatar uses logo
+    avatar.innerHTML = `<img src="assets/logo.svg" alt="Montfort ICSE">`;
 
     const bubble = document.createElement("div");
     bubble.className = "typing-bubble";
@@ -95,6 +123,7 @@
     isTyping = false;
     const el = document.getElementById("typing-indicator");
     if (el) el.remove();
+    // Do NOT enable input here; we enable after bot finishes typing message
   }
 
   async function typeBotMessage(text, speed = 20) {
@@ -105,25 +134,35 @@
 
     const avatar = document.createElement("div");
     avatar.className = "message-avatar";
-    avatar.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-      viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-      </svg>`;
+    // BOT message avatar uses logo
+    avatar.innerHTML = `<img src="assets/logo.svg" alt="Montfort ICSE">`;
+
+    const content = document.createElement("div");
+    content.className = "message-content";
 
     const bubble = document.createElement("div");
     bubble.className = "message-bubble typing-text";
 
+    const time = document.createElement("div");
+    time.className = "message-time";
+
+    content.appendChild(bubble);
+    content.appendChild(time);
     row.appendChild(avatar);
-    row.appendChild(bubble);
+    row.appendChild(content);
     messagesEl.appendChild(row);
 
     let i = 0;
     let current = "";
 
+    // Keep user blocked while bot is typing
+    setInputDisabled(true);
+
     function step() {
       if (i < text.length) {
         current += text.charAt(i);
         bubble.innerHTML = linkify(current);
+        time.textContent = getCurrentTime();
         i++;
         const delay = speed + (Math.random() * 10 - 5);
         setTimeout(step, delay);
@@ -131,6 +170,8 @@
       } else {
         bubble.classList.remove("typing-text");
         if (window.ChatSounds) window.ChatSounds.delivered();
+        // Bot finished typing → re-enable user input
+        setInputDisabled(false);
       }
     }
 
@@ -164,10 +205,28 @@
   toggleBtn.addEventListener("click", openChat);
   closeBtn.addEventListener("click", closeChat);
 
+  // Close chat when clicking outside
+  document.addEventListener("click", (e) => {
+    if (
+      !widget.classList.contains("hidden") &&
+      !widget.contains(e.target) &&
+      !toggleBtn.contains(e.target)
+    ) {
+      closeChat();
+    }
+  });
+
+  // Escape key to close chat
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !widget.classList.contains("hidden")) {
+      closeChat();
+    }
+  });
+
   window.ChatUI = {
     createMessageRow,
     showTypingIndicator,
     hideTypingIndicator,
-    typeBotMessage
+    typeBotMessage,
   };
 })();
