@@ -263,18 +263,6 @@ You MAY:
 - Combine obvious pairs: "text books" → "textbooks" (same meaning).
 - Fix simple English grammar if needed.
 
-The following logic words MUST NOT CHANGE MEANING:
-- "did not"
-- "don't"
-- "didn't"
-- "not"
-- "follow"
-- "break"
-- "obey"
-- "rules"
-
-You MUST treat these as FIXED MEANING WORDS.
-
 These original user words must stay the SAME CONCEPT
 (you may only fix spelling or spacing for them):
 ${originalTokens.join(", ")}
