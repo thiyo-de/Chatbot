@@ -1,5 +1,5 @@
-// controllers/chatController.js — FINAL PRODUCTION VERSION + DEBUG LOGS
-// ChatGPT-style memory + cache + smart fallback + IUI meaning-match v3
+// controllers/chatController.js — INTENT VERSION (Option A)
+// Fully updated for multi-question variations + intent-based embeddings
 
 import fs from "fs";
 import path from "path";
@@ -17,22 +17,23 @@ import { findTopMatches } from "../rag/semantic-search.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// 🟣 DEBUG SWITCH — turn off in production
+// 🟣 DEBUG SWITCH  
 const DEBUG = true;
 const log = (...msg) => DEBUG && console.log("[DEBUG]", ...msg);
 
-// 🧠 MEMORY (ChatGPT-like follow-up understanding)
+// 🧠 MEM for small follow-ups  
 let memory = "";
 
-// ⚡ EMBEDDING CACHE (10x faster performance)
+// ⚡ Embedding Cache  
 const EMB_CACHE = new Map();
 
+// Load embeddings  
 const EMB_PATH = path.join(__dirname, "..", "rag", "embeddings.json");
 let EMBEDDINGS = [];
 
-/* -----------------------------------------------------------
-   LOAD EMBEDDINGS
------------------------------------------------------------ */
+/* ---------------------------------------------------------
+   LOAD EMBEDDINGS (single time)
+--------------------------------------------------------- */
 function loadEmbeddingsOnce() {
   if (EMBEDDINGS.length > 0) return;
 
@@ -49,65 +50,50 @@ function loadEmbeddingsOnce() {
   }
 }
 
-/* -----------------------------------------------------------
-   SMART FALLBACK (School-safe reply)
------------------------------------------------------------ */
+/* ---------------------------------------------------------
+   SMART FALLBACK
+--------------------------------------------------------- */
 async function smartFallback(question) {
-  const prompt = `
-If this question is about Montfort ICSE School but not in dataset:
-Reply EXACTLY:
-"I don’t have that information in my data. Please visit https://montforticse.in/ or contact the school office for official details."
-
-If general question (not about school):
-Answer normally with a short helpful reply.
-
-Question: "${question}"
-`;
-  return await answerGeneralQuestion(prompt);
+  return "I don’t have that information in my data. Please visit https://montforticse.in/ or contact the school office for official details.";
 }
 
-/* -----------------------------------------------------------
-   LLM MEANING MATCH (v3)
------------------------------------------------------------ */
-async function llmMeaningMatch(userQ, faqQ) {
+
+/* ---------------------------------------------------------
+   LLM VALIDATION — INTENT MATCH
+--------------------------------------------------------- */
+async function llmMeaningMatch(userQ, candidateQ) {
   const prompt = `
-Determine if these two questions have the SAME MEANING.
+Do these questions have EXACTLY the same meaning?
 
-You MUST treat the following as SAME meaning:
+Rules:
+- Grammar changes do NOT matter
+- Word order does NOT matter
+- Spelling mistakes do NOT matter
 - "school" = "campus"
-- "hostel food" = "mess food" = "food for hostel students"
-- "canteen" = "food area" = "snacks place"
-- Grammar differences do NOT change meaning
-- Word order differences do NOT change meaning
-- Spelling mistakes do NOT change meaning
-- Missing helper words ("in", "at", "for") do NOT change meaning
+- "class start time" = "school timing"
+- "classes begin" = "school starting time"
+- "secured campus" = "safety measures"
+- "hostel food" = "mess food"
+- "canteen" = "snack area"
 
-If both questions are about the same topic,
-reply EXACTLY: "yes"
+If SAME meaning → reply EXACTLY "yes"
+If NOT → reply EXACTLY "no"
 
-If NOT same topic, reply EXACTLY: "no"
-
-User question: "${userQ}"
-FAQ question: "${faqQ}"
-
-Reply ONLY "yes" or "no".
+User: "${userQ}"
+Reference: "${candidateQ}"
 `;
 
   const out = await answerGeneralQuestion(prompt);
   const ans = (out || "").trim().toLowerCase();
 
-  log("LLM Meaning Match:", ans);
+  log("LLM Meaning:", ans);
 
-  return (
-    ans === "yes" ||
-    ans.startsWith("yes") ||
-    ans.includes("yes")
-  );
+  return ans === "yes";
 }
 
-/* -----------------------------------------------------------
-   MAIN CHAT HANDLER (FINAL PIPELINE)
------------------------------------------------------------ */
+/* ---------------------------------------------------------
+   MAIN CHAT HANDLER
+--------------------------------------------------------- */
 export async function handleChat(req, res) {
   try {
     loadEmbeddingsOnce();
@@ -120,105 +106,112 @@ export async function handleChat(req, res) {
     question = question.trim();
     log("USER:", question);
 
-    /* 1) MEMORY */
+    /* ---------------------------------
+       1) MEMORY
+    ----------------------------------- */
     let finalUser = question;
 
     if (memory && finalUser.length <= 4) {
-      finalUser = memory + " " + finalUser;
-      log("MEMORY APPLIED:", finalUser);
+      finalUser = `${memory} ${finalUser}`;
+      log("MEMORY:", finalUser);
     }
     memory = question;
 
-    /* 2) SPELL FIX */
+    /* ---------------------------------
+       2) SPELLING FIX
+    ----------------------------------- */
     const corrected = await correctSpelling(finalUser);
     log("SPELL:", corrected);
 
-    /* 3) NORMALIZED */
+    /* ---------------------------------
+       3) NORMALIZE
+    ----------------------------------- */
     const normalized = await normalizeToMeaning(corrected);
     log("NORM:", normalized);
 
-    /* 4) EMBEDDINGS + CACHE */
+    /* ---------------------------------
+       4) GET EMBEDDING (cached)
+    ----------------------------------- */
     let vector = EMB_CACHE.get(normalized);
-
-    if (vector) {
-      log("EMBEDDING CACHE HIT");
-    } else {
+    if (!vector) {
       log("GENERATING EMBEDDING...");
       vector = await embedText(normalized);
       EMB_CACHE.set(normalized, vector);
     }
 
     if (!vector.length) {
-      log("NO EMBEDDING → FALLBACK");
+      log("NO VECTOR → FALLBACK");
       return res.json({
         answer: await smartFallback(normalized),
-        via: "no-embedding",
+        via: "no-vector",
       });
     }
 
     if (!EMBEDDINGS.length) {
-      log("NO EMBEDDINGS FILE → FALLBACK");
+      log("NO EMBEDDINGS FILE");
       return res.json({
         answer: await smartFallback(normalized),
-        via: "no-embeddings-file",
+        via: "no-embeddings",
       });
     }
 
-    /* 5) SEMANTIC SEARCH */
+    /* ---------------------------------
+       5) SEMANTIC SEARCH
+    ----------------------------------- */
     const matches = findTopMatches(vector, EMBEDDINGS, normalized, 5);
     const best = matches[0];
     const second = matches[1];
 
-    log("BEST MATCH:", best);
-    log("SECOND MATCH:", second);
+    log("BEST:", best);
+    log("SECOND:", second);
 
     if (!best) {
-      log("NO MATCH");
       return res.json({
         answer: await smartFallback(normalized),
         via: "no-match",
       });
     }
 
-    /* 6) SCORE CHECK */
-    const MIN_SCORE = 0.10;
-    const GAP = 0.05;
+    /* ---------------------------------
+       6) SCORE CHECK
+    ----------------------------------- */
+    const MIN = 0.11;      // slightly higher for Option A
+    const GAP = 0.06;
 
-    const lowScore = best._score < MIN_SCORE;
-    const ambiguous = second && Math.abs(best._score - second._score) < GAP;
+    const low = best._score < MIN;
+    const ambi = second && Math.abs(best._score - second._score) < GAP;
 
-    log("BEST SCORE:", best._score, "LOW?", lowScore, "AMBIG?", ambiguous);
+    log("Score:", best._score, "LOW?", low, "AMBIG?", ambi);
 
-    /* 7) LLM VALIDATION */
-    if (lowScore || ambiguous) {
-      log("RUNNING LLM MEANING VALIDATION...");
-      const same = await llmMeaningMatch(normalized, best.question);
-
-      if (same) {
-        log("LLM CONFIRMED MATCH");
+    /* ---------------------------------
+       7) LLM CONFIRMATION (when needed)
+    ----------------------------------- */
+    if (low || ambi) {
+      log("LLM VALIDATING...");
+      const ok = await llmMeaningMatch(normalized, best.question);
+      if (ok) {
         return res.json({
           answer: best.answer,
-          via: "llm-validated-match",
+          via: "llm-validated",
         });
       }
 
-      log("LLM REJECTED → FALLBACK");
       return res.json({
         answer: await smartFallback(normalized),
-        via: lowScore ? "low-score" : "ambiguous",
+        via: low ? "low-score" : "ambiguous",
       });
     }
 
-    /* 8) DIRECT MATCH */
-    log("SEMANTIC MATCH SUCCESS");
+    /* ---------------------------------
+       8) Direct match
+    ----------------------------------- */
     return res.json({
       answer: best.answer,
-      via: "semantic-match",
+      via: "semantic",
     });
 
   } catch (err) {
     console.error("ERROR:", err);
-
     return res.json({
       answer: await smartFallback(req.body?.question || ""),
       via: "error",

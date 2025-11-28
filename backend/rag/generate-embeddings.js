@@ -1,4 +1,4 @@
-// rag/generate-embeddings.js — FINAL HIGH-QUALITY VERSION
+// rag/generate-embeddings.js — INTENT + MULTIVARIATION VERSION (Option A)
 
 import fs from "fs";
 import path from "path";
@@ -10,27 +10,27 @@ import { embedText } from "../services/geminiService.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const RAW_INPUT_PATH = path.join(__dirname, "school-data.json");
+const RAW_INPUT_PATH = path.join(__dirname, "school-data.json");  // Intent-based file
 const UNDERSTOOD_OUTPUT_PATH = path.join(__dirname, "school-data-understood.json");
 const EMBEDDINGS_OUTPUT_PATH = path.join(__dirname, "embeddings.json");
 
 /* ---------------------------------------------------------
-   Build strong semantic text for each Q&A
+   Build embedding entry for *each question variation*
 --------------------------------------------------------- */
-function buildSemanticEntry(entry, index) {
-  const question = (entry.question || "").trim();
-  const answer = (entry.answer || "").trim();
+function buildSemanticEntry(intent, question, answer, index) {
+  const q = question.trim();
+  const a = answer.trim();
 
   const semanticBlock = [
     `This is official Montfort ICSE School FAQ content.`,
-    `User question: "${question}".`,
-    `Verified school answer: "${answer}".`,
-    `This FAQ is about school academics, admissions, hostel, dining, sports, safety, communication or facilities.`,
-    `This description improves embedding clarity and topic separation such as avoiding mixing food, water, or hostel content.`,
-    `Answer meaning must remain unchanged.`,
+    `Intent: "${intent}"`,
+    `User question variation: "${q}".`,
+    `Verified school answer: "${a}".`,
+    `This FAQ belongs to category: academics, admission, hostel, canteen, sports, facilities, safety.`,
+    `Do NOT change meaning of the answer.`,
   ];
 
-  const tokens = `${question} ${answer}`
+  const tokens = `${q} ${a}`
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, " ")
     .split(/\s+/)
@@ -39,15 +39,17 @@ function buildSemanticEntry(entry, index) {
   const keywords = [...new Set(tokens)].join(", ");
 
   const embeddingText =
-    `QUESTION: ${question}\n` +
-    `ANSWER: ${answer}\n\n` +
+    `INTENT: ${intent}\n` +
+    `QUESTION: ${q}\n` +
+    `ANSWER: ${a}\n\n` +
     `MEANING BLOCK: ${semanticBlock.join(" ")}\n\n` +
-    `KEYWORDS: ${keywords}, montfort, icse, school, hostel, admission, academics, facilities`;
+    `KEYWORDS: ${keywords}, montfort, icse, school, academics, hostel, admission, facilities`;
 
   return {
-    id: `item_${index}`,
-    question,
-    answer,
+    id: `${intent}_q${index}`,
+    intent,
+    question: q,
+    answer: a,
     embedding_text: embeddingText,
     keyword: keywords,
   };
@@ -62,39 +64,56 @@ async function main() {
     process.exit(1);
   }
 
-  console.log("📥 Loading school-data.json");
+  console.log("📥 Loading intent-based school-data.json");
   const raw = fs.readFileSync(RAW_INPUT_PATH, "utf8");
-  const items = JSON.parse(raw);
+  const items = JSON.parse(raw);  // Array of intents
 
   const understood = [];
   const embeddings = [];
 
-  for (let i = 0; i < items.length; i++) {
-    const block = buildSemanticEntry(items[i], i);
-    understood.push(block);
+  let counter = 0;
 
-    console.log(`🧠 Processing embedding ${i + 1}/${items.length}`);
+  for (const intentBlock of items) {
+    const intent = intentBlock.intent;
+    const answer = intentBlock.answer;
 
-    let vector = [];
-    try {
-      vector = await embedText(block.embedding_text);
-    } catch (err) {
-      console.error("❌ Embedding failed", err);
+    if (!intent || !answer || !Array.isArray(intentBlock.questions)) {
+      console.error("❌ Invalid entry (intent/questions missing):", intentBlock);
+      continue;
     }
 
-    embeddings.push({
-      id: block.id,
-      question: block.question,
-      answer: block.answer,
-      keyword: block.keyword,
-      vector,
-    });
+    // Loop through ALL question variations
+    for (const q of intentBlock.questions) {
+      const entry = buildSemanticEntry(intent, q, answer, counter);
+      understood.push(entry);
+
+      console.log(`🧠 Embedding ${counter + 1}: ${q}`);
+
+      let vector = [];
+      try {
+        vector = await embedText(entry.embedding_text);
+      } catch (err) {
+        console.error("❌ Embedding failed", err);
+      }
+
+      embeddings.push({
+        id: entry.id,
+        intent: entry.intent,
+        question: entry.question,
+        answer: entry.answer,
+        keyword: entry.keyword,
+        vector,
+      });
+
+      counter++;
+    }
   }
 
   fs.writeFileSync(UNDERSTOOD_OUTPUT_PATH, JSON.stringify(understood, null, 2));
   fs.writeFileSync(EMBEDDINGS_OUTPUT_PATH, JSON.stringify(embeddings, null, 2));
 
-  console.log("🎉 Embeddings generated successfully!");
+  console.log("🎉 SUCCESS! Intent-based embeddings generated.");
+  console.log(`Total variations embedded: ${counter}`);
 }
 
 main();

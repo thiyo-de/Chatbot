@@ -1,4 +1,5 @@
-// rag/semantic-search.js — AUTO TOPIC-AWARE SEMANTIC ENGINE (NO MANUAL RULES)
+// rag/semantic-search.js — INTENT-AWARE SEMANTIC ENGINE (Option A)
+// Supports multiple question variations mapping to the same intent.
 
 /* ---------------------------------------------------------
    COSINE SIMILARITY
@@ -33,15 +34,14 @@ function tokenize(text) {
 }
 
 /* ---------------------------------------------------------
-   BUILD TOKEN STATS (AUTO TOPIC LEARNING)
-   - Learns topic relevance automatically from FAQ corpus.
+   BUILD TOKEN STATS (topic clustering)
 --------------------------------------------------------- */
 function buildTokenStats(entries) {
-  const df = new Map(); // token → doc frequency
+  const df = new Map();
   let totalDocs = 0;
 
-  for (const entry of entries) {
-    const text = (entry.keyword || entry.question || "").toLowerCase();
+  for (const e of entries) {
+    const text = (e.keyword || e.question || "").toLowerCase();
     const tokens = new Set(tokenize(text));
 
     if (!tokens.size) continue;
@@ -56,17 +56,15 @@ function buildTokenStats(entries) {
 }
 
 /* ---------------------------------------------------------
-   IDF — Rare Token Weighting
-   Makes “textbooks” > “provide”
-   Makes “canteen” > “campus”
+   RARE WORD WEIGHTING (IDF)
 --------------------------------------------------------- */
 function idf(token, dfMap, totalDocs) {
   const df = dfMap.get(token) || 0;
-  return Math.log((totalDocs + 1) / (df + 1)) + 1; // normalized
+  return Math.log((totalDocs + 1) / (df + 1)) + 1;
 }
 
 /* ---------------------------------------------------------
-   KEYWORD SCORE (IDF-WEIGHTED)
+   KEYWORD SCORE
 --------------------------------------------------------- */
 function keywordScore(userTokens, entryTokens, dfMap, totalDocs) {
   if (!userTokens.length || !entryTokens.length || !totalDocs) return 0;
@@ -80,10 +78,7 @@ function keywordScore(userTokens, entryTokens, dfMap, totalDocs) {
   for (const t of uniqueUser) {
     const weight = idf(t, dfMap, totalDocs);
     den += weight;
-
-    if (entrySet.has(t)) {
-      num += weight;
-    }
+    if (entrySet.has(t)) num += weight;
   }
 
   if (!den) return 0;
@@ -91,46 +86,60 @@ function keywordScore(userTokens, entryTokens, dfMap, totalDocs) {
 }
 
 /* ---------------------------------------------------------
-   TOP MATCHES — AUTO TOPIC-AWARE
+   INTENT-AWARE MATCHING
+   - Each entry belongs to an intent
+   - We collapse results by intent
+   - Best variation per intent = final score
 --------------------------------------------------------- */
 export function findTopMatches(userVector, entries, userQuery = "", limit = 5) {
+  if (!entries || !entries.length) return [];
+
   const userTokens = tokenize((userQuery || "").toLowerCase());
-  const results = [];
-
-  if (!entries || !entries.length) return results;
-
-  const { df, totalDocs } = buildTokenStats(entries);
   const isShortQuery = userTokens.length <= 2;
 
+  const { df, totalDocs } = buildTokenStats(entries);
+
+  // Weight balancing
   const SEM_WEIGHT = isShortQuery ? 0.70 : 0.65;
   const KEY_WEIGHT = isShortQuery ? 0.30 : 0.35;
+
+  // Temporary map: intent → best match
+  const intentScores = new Map();
 
   for (const entry of entries) {
     if (!entry.vector?.length) continue;
 
     const semantic = cosineSimilarity(userVector, entry.vector);
     const entryTokens = tokenize(entry.keyword || entry.question || "");
+
     const key = keywordScore(userTokens, entryTokens, df, totalDocs);
 
-    // AUTO-OVERLAP BOOST (tiny)
     const hasOverlap = userTokens.some((t) => entryTokens.includes(t));
     const topicBoost = hasOverlap ? 0.05 : 0;
 
     const score = semantic * SEM_WEIGHT + key * KEY_WEIGHT + topicBoost;
 
-    results.push({
-      ...entry,
-      _score: score,
-    });
+    const intent = entry.intent || entry.id;
+
+    // Keep the BEST variation for each intent
+    if (!intentScores.has(intent) || score > intentScores.get(intent)._score) {
+      intentScores.set(intent, {
+        ...entry,
+        _score: score,
+      });
+    }
   }
 
-  return results.sort((a, b) => b._score - a._score).slice(0, limit);
+  // Convert map → list
+  const list = Array.from(intentScores.values());
+
+  // Sort by score
+  return list.sort((a, b) => b._score - a._score).slice(0, limit);
 }
 
 /* ---------------------------------------------------------
-   BEST MATCH (single item)
+   SINGLE BEST MATCH
 --------------------------------------------------------- */
 export function findBestMatch(userVector, entries, userQuery = "") {
-  const list = findTopMatches(userVector, entries, userQuery, 1);
-  return list[0] || null;
+  return findTopMatches(userVector, entries, userQuery, 1)[0] || null;
 }

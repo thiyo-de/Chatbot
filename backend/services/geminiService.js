@@ -19,7 +19,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Vocabulary file used for word-split + local spell-fix
-const VOCAB_PATH = path.join(__dirname, "..", "rag", "school-data-understood.json");
+const VOCAB_PATH = path.join(
+  __dirname,
+  "..",
+  "rag",
+  "school-data-understood.json"
+);
 
 let VOCAB_SET = null;
 let VOCAB_WORDS = null;
@@ -48,7 +53,9 @@ function loadVocabOnce() {
 
     VOCAB_SET = set;
     VOCAB_WORDS = Array.from(set);
-    console.log(`[GeminiService] Loaded ${VOCAB_WORDS.length} vocabulary words.`);
+    console.log(
+      `[GeminiService] Loaded ${VOCAB_WORDS.length} vocabulary words.`
+    );
   } catch (err) {
     console.error("[GeminiService] Failed to load vocabulary:", err);
     VOCAB_SET = new Set();
@@ -259,7 +266,7 @@ VERY IMPORTANT:
 - DO NOT remove important words.
 
 You MAY:
-- Fix misspellings: "texxt" → "text", "bukks" → "books".
+- Fix misspellings: "texxt" → "text", "bukks" → "books" , "conatct" → "contact".
 - Combine obvious pairs: "text books" → "textbooks" (same meaning).
 - Fix simple English grammar if needed.
 
@@ -308,31 +315,48 @@ export async function normalizeToMeaning(text) {
   if (!text) return "";
 
   const cleaned = preClean(text);
-  const tokens = cleaned.split(/\s+/);
+  const tokens = cleaned.split(/\s+/).filter(Boolean);
   const nounCandidates = tokens.filter((t) => t.length > 3);
 
+  // If too short → don't risk rewrite
+  if (tokens.length <= 3) return cleaned;
+
   const inst = `
-Rewrite the user's message as a clear, complete English QUESTION.
+Rewrite the user's message as a clean English QUESTION.
 
-GOAL:
-- Improve grammar.
-- Make the question easy to understand.
-- Keep the MEANING exactly the same.
+VERY IMPORTANT:
+You must NOT change the user's meaning under ANY condition.
 
-STRICT RULES:
-- DO NOT replace nouns with other nouns.
-- DO NOT introduce any new items, entities, or numbers.
-- DO NOT delete user nouns.
+STRICT RULES (DO NOT BREAK):
+1. DO NOT change or replace ANY noun.
+2. DO NOT introduce ANY new noun or verb.
+3. DO NOT guess the user's meaning or intention.
+4. DO NOT remove important words.
+5. DO NOT change the action:
+   - follow
+   - break
+   - obey
+   - allow
+   - rules
+6. DO NOT change words like:
+   - what
+   - if
+   - happen / happens
+   - did / did not / didn't
+7. You may ONLY:
+   - Add helper words ("the", "does", "do", "is", "are")
+   - Fix tiny grammar issues
+   - Reorder existing words WITHOUT changing meaning
 
-These words represent important concepts; keep them the SAME concept
-(you may change word order or grammar, but not the meaning):
-${nounCandidates.join(", ")}
+If the sentence is too unclear to safely rewrite,
+RETURN the cleaned version as-is.
 
-You may:
-- Add helper words like "the", "a", "to", "at", "for", "in", "about".
-- Reorder words to form a correct question.
+These words represent important concepts and MUST stay the SAME CONCEPT:
+${nounCandidates.join(
+  ", "
+)}, follow, rule, rules, break, obey, happen, happens, did, didn't, "did not"
 
-Return ONLY the rewritten question in one sentence.
+Return ONLY the meaning-preserved corrected question, one sentence, no explanation.
 `;
 
   try {
@@ -340,9 +364,9 @@ Return ONLY the rewritten question in one sentence.
     if (!out) return cleaned;
 
     const result = out.trim();
-    const wc = result.split(/\s+/).length;
 
-    if (wc <= 3) return cleaned;
+    // Safety check: output must not be too short
+    if (result.split(/\s+/).length <= 3) return cleaned;
 
     return result;
   } catch {
@@ -386,7 +410,7 @@ Return ONLY the final answer text.
 
   return (
     out ||
-    'I don’t have that information in my data. Please visit https://montforticse.in/ or contact the school office for official details.'
+    "I don’t have that information in my data. Please visit https://montforticse.in/ or contact the school office for official details."
   );
 }
 
