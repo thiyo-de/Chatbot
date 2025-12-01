@@ -1,10 +1,11 @@
 /* -----------------------------------
    GLOBAL
 ------------------------------------ */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+@import url("https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700&display=swap");
 
 *, *::before, *::after {
   box-sizing: border-box;
+   font-family: "Satoshi", sans-serif;
 }
 
 body {
@@ -547,4 +548,191 @@ body {
   .chat-messages::-webkit-scrollbar-thumb:hover {
     background: #64748b;
   }
+}
+
+/*--------------------------------------------------------*/
+
+/* ==========================================================
+   TOUR LIST CONTAINER
+========================================================== */
+.tour-list-box {
+  background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid #e1e8ff;
+  box-shadow: 0 4px 20px rgba(0, 17, 102, 0.08);
+  position: relative;
+  overflow: hidden;
+  animation: slideInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tour-list-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #001166 0%, #DD9933 50%, #001166 100%);
+}
+
+/* ==========================================================
+   HEADINGS
+========================================================== */
+.tour-list-box h3 {
+  color: #001166;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tour-list-box h3::before {
+  content: '🌍';
+  font-size: 14px;
+}
+
+.tour-list-box h3:nth-of-type(2)::before {
+  content: '📁';
+}
+
+/* ==========================================================
+   FLEX LAYOUT (Replaces Grid)
+========================================================== */
+.tour-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;  /* Left align clean */
+  gap: 12px;
+}
+
+.tour-grid:last-child {
+  margin-bottom: 0;
+}
+
+/* ==========================================================
+   BUTTON STYLE
+========================================================== */
+.tour-btn {
+  background: linear-gradient(135deg, #001166 0%, #1a2f8c 100%);
+  color: #ffffff;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+
+  /* FIXED TEXT WRAP ISSUE */
+  white-space: normal !important;
+  writing-mode: horizontal-tb !important;
+
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.35;
+
+  min-width: 150px;    /* Flexbox stable width */
+  max-width: 200px;
+
+  flex: 1 1 calc(33.33% - 12px);   /* 3 per row */
+  box-sizing: border-box;
+
+  transition: all 0.28s ease;
+  box-shadow: 0 2px 8px rgba(0, 17, 102, 0.2);
+
+  position: relative;
+  overflow: hidden;
+}
+
+.tour-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.tour-btn:hover {
+  background: linear-gradient(135deg, #DD9933 0%, #e6a94a 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(221, 153, 51, 0.3);
+  color: #001166;
+}
+
+.tour-btn:hover::before {
+  left: 100%;
+}
+
+.tour-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(221, 153, 51, 0.4);
+}
+
+/* ==========================================================
+   RESPONSIVE — FLEXBOX VERSION
+========================================================== */
+@media (max-width: 768px) {
+  .tour-btn {
+    flex: 1 1 calc(50% - 12px);   /* 2 per row */
+    min-width: 48%;
+    padding: 10px 14px;
+    font-size: 12px;
+  }
+  .tour-list-box {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tour-btn {
+    flex: 1 1 100%;   /* Single column */
+    min-width: 100%;
+    max-width: 100%;
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+  .tour-list-box {
+    padding: 14px;
+  }
+}
+
+/* ==========================================================
+   ANIMATION
+========================================================== */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================
+   ACCESSIBILITY
+========================================================== */
+.tour-btn:focus {
+  outline: 2px solid #DD9933;
+  outline-offset: 2px;
+}
+
+.tour-btn:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* FIX — allow clicking inside HTML message bubbles */
+.message-bubble.html-message {
+  pointer-events: auto !important;
+  user-select: text !important;
 }

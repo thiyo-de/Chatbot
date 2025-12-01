@@ -1,0 +1,31 @@
+#: locale=en
+
+## Media
+
+### Title
+panorama_A684706A_87CE_F107_41E0_005C257692E9.label = Montfort School - ICSE/ANGLO INDIAN
+panorama_9ABD0D81_87D7_D302_41D0_B0D877B21296.label = Montfort School - ICSE/ANGLO INDIAN
+panorama_9D8C61C7_87D7_F30D_4196_A2BD9CA720D0.label = Montfort School - ICSE/ANGLO INDIAN
+panorama_A6BD32B2_87CE_D107_41DC_04A4305DABF3.label = Montfort School - ICSE/ANGLO INDIAN
+panorama_A6BF02B3_87CE_D105_41CE_3BBE0A2362FC.label = Montfort School - ICSE/ANGLO INDIAN
+panorama_A6BF22B4_87CE_D103_41D5_F3C4CB8FC72B.label = Montfort School - ICSE/ANGLO INDIAN
+panorama_A684806A_87CE_F107_41E0_D58630E919D2.label = Montfort School - ICSE/ANGLO INDIAN
+panorama_DA4BF1FC_C9F9_EEBF_41D9_871691B9AF44.label = Montfort School - ICSE/ANGLO INDIAN
+panorama_A685D06B_87CE_F105_4184_F83FB2A8E765.label = Montfort School - ICSE/ANGLO INDIAN
+panorama_98E2047E_87CE_F1FF_41DB_9109AA0210F9.label = Montfort School - ICSE/ANGLO INDIAN
+panorama_98E43481_87CE_F105_41C6_1E79543BDF75.label = Montfort School - ICSE/ANGLO INDIAN
+panorama_98E42482_87CE_F107_41A1_EE24EAD9E515.label = Montfort School - ICSE/ANGLO INDIAN
+panorama_985994EA_87CE_B106_41D0_5DF81CB4C568.label = Montfort School - ICSE/ANGLO INDIAN
+panorama_985964EB_87CE_B106_41D9_90BEACABBEAA.label = Montfort School - ICSE/ANGLO INDIAN
+
+## Skin
+
+### Multiline Text
+HTMLText_8AEB19A6_85B5_B30E_41D5_5FBF98D37CCE.html = <div style="text-align:left; color:#000; "><DIV STYLE="text-shadow:0px 0px 10px rgba(0,0,0,1);line-height:130%;text-align:center;font-size:25px;"><SPAN STYLE="display:inline-block; letter-spacing:0px; white-space:pre-wrap;color:#000000;font-family:Arial, Helvetica, sans-serif;"><SPAN STYLE="color:#ffffff;font-size:25px;font-family:'Satoshi Medium';">{{title}}</SPAN></SPAN></DIV></div>
+
+## Tour
+
+### Description
+
+### Title
+tour.name = Montfort School - ICSE/ANGLO INDIAN ( Mayfield Campus )
