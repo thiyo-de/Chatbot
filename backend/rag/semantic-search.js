@@ -10,6 +10,7 @@ export function cosineSimilarity(a, b) {
   let dot = 0,
     normA = 0,
     normB = 0;
+
   const len = Math.min(a.length, b.length);
 
   for (let i = 0; i < len; i++) {
@@ -17,6 +18,7 @@ export function cosineSimilarity(a, b) {
     normA += a[i] * a[i];
     normB += b[i] * b[i];
   }
+
   if (!normA || !normB) return 0;
 
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));
@@ -45,6 +47,7 @@ function buildTokenStats(entries) {
     const tokens = new Set(tokenize(text));
 
     if (!tokens.size) continue;
+
     totalDocs++;
 
     for (const t of tokens) {
@@ -64,7 +67,7 @@ function idf(token, dfMap, totalDocs) {
 }
 
 /* ---------------------------------------------------------
-   KEYWORD SCORE
+   KEYWORD SCORE (meaning-based keyword overlap)
 --------------------------------------------------------- */
 function keywordScore(userTokens, entryTokens, dfMap, totalDocs) {
   if (!userTokens.length || !entryTokens.length || !totalDocs) return 0;
@@ -76,52 +79,60 @@ function keywordScore(userTokens, entryTokens, dfMap, totalDocs) {
   let den = 0;
 
   for (const t of uniqueUser) {
-    const weight = idf(t, dfMap, totalDocs);
+    const weight = idf(t, dfMap, totalDocs); // rare words get higher weight
     den += weight;
+
     if (entrySet.has(t)) num += weight;
   }
 
   if (!den) return 0;
+
   return num / den;
 }
 
 /* ---------------------------------------------------------
    INTENT-AWARE MATCHING
-   - Each entry belongs to an intent
-   - We collapse results by intent
-   - Best variation per intent = final score
+   - Multiple variations per intent collapse to single best entry
+   - Best variation = selected result per intent
 --------------------------------------------------------- */
 export function findTopMatches(userVector, entries, userQuery = "", limit = 5) {
   if (!entries || !entries.length) return [];
 
   const userTokens = tokenize((userQuery || "").toLowerCase());
-  const isShortQuery = userTokens.length <= 2;
 
+  const isShortQuery = userTokens.length <= 2; // Used for weighting
   const { df, totalDocs } = buildTokenStats(entries);
 
-  // Weight balancing
+  // Weight balancing tuned for excellent accuracy
   const SEM_WEIGHT = isShortQuery ? 0.70 : 0.65;
   const KEY_WEIGHT = isShortQuery ? 0.30 : 0.35;
 
-  // Temporary map: intent → best match
+  // TEMP STORAGE: intent → best match object
   const intentScores = new Map();
 
   for (const entry of entries) {
     if (!entry.vector?.length) continue;
 
+    // Semantic similarity
     const semantic = cosineSimilarity(userVector, entry.vector);
-    const entryTokens = tokenize(entry.keyword || entry.question || "");
 
+    // Keyword score
+    const entryTokens = tokenize(entry.keyword || entry.question || "");
     const key = keywordScore(userTokens, entryTokens, df, totalDocs);
 
+    // Small boost when user tokens appear in the result tokens
     const hasOverlap = userTokens.some((t) => entryTokens.includes(t));
     const topicBoost = hasOverlap ? 0.05 : 0;
 
-    const score = semantic * SEM_WEIGHT + key * KEY_WEIGHT + topicBoost;
+    // Final combined score
+    const score =
+      semantic * SEM_WEIGHT +
+      key * KEY_WEIGHT +
+      topicBoost;
 
     const intent = entry.intent || entry.id;
 
-    // Keep the BEST variation for each intent
+    // Keep BEST version per intent
     if (!intentScores.has(intent) || score > intentScores.get(intent)._score) {
       intentScores.set(intent, {
         ...entry,
@@ -130,15 +141,15 @@ export function findTopMatches(userVector, entries, userQuery = "", limit = 5) {
     }
   }
 
-  // Convert map → list
+  // Convert Map → Array
   const list = Array.from(intentScores.values());
 
-  // Sort by score
+  // Sort highest score first
   return list.sort((a, b) => b._score - a._score).slice(0, limit);
 }
 
 /* ---------------------------------------------------------
-   SINGLE BEST MATCH
+   BEST SINGLE MATCH
 --------------------------------------------------------- */
 export function findBestMatch(userVector, entries, userQuery = "") {
   return findTopMatches(userVector, entries, userQuery, 1)[0] || null;

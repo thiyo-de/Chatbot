@@ -5563,5 +5563,755 @@
       "i want to know about is wi-fi available on the campus"
     ],
     "answer": "Yes, Wi-Fi is available in designated areas of the campus, mainly for academic and administrative use with proper monitoring."
+  },
+  {
+    "intent": "sunday_holiday_information",
+    "questions": [
+      "Is Sunday holiday",
+      "Tell me about Sunday holiday",
+      "Is school open on Sunday",
+      "Does school work on Sunday",
+      "Give details on Sunday holiday",
+      "Is there class on Sunday",
+      "What is Sunday rule in school",
+      "Sunday holiday yes or no",
+      "Is Sunday considered holiday"
+    ],
+    "answer": "Most schools remain closed on Sundays as a regular weekly holiday."
+  },
+  {
+    "intent": "saturday_school_timing",
+    "questions": [
+      "Is Saturday working day",
+      "Does school run on Saturday",
+      "Is Saturday holiday or working",
+      "What is Saturday class timing",
+      "Give info about Saturday working day",
+      "Saturday school open or closed",
+      "Tell me Saturday rule",
+      "Is Saturday half day",
+      "Do we have classes on Saturday"
+    ],
+    "answer": "Saturday schedules vary by school, and some schools may conduct full day, half day, or remain closed."
+  },
+  {
+    "intent": "festival_holiday_details",
+    "questions": [
+      "What festival holidays school gives",
+      "Tell me about school festival holidays",
+      "Info on festival leave",
+      "Give list of festival holidays",
+      "Festival holiday rules in school",
+      "Does school provide festival holidays",
+      "How school handles festival holidays",
+      "Which festivals are holidays",
+      "Is festival time holiday for students"
+    ],
+    "answer": "Schools provide holidays for major festivals as per the academic calendar and state guidelines."
+  },
+  {
+    "intent": "mid_term_holiday_information",
+    "questions": [
+      "What is mid term holiday",
+      "Tell me about mid term leave",
+      "Do schools give midterm holidays",
+      "Midterm break details",
+      "Info on mid term vacation",
+      "Is mid term school holiday",
+      "When is mid term leave",
+      "How long mid term break is",
+      "Explain mid term holiday"
+    ],
+    "answer": "Most schools offer a short mid-term holiday as mentioned in their academic calendar."
+  },
+  {
+    "intent": "summer_vacation_details",
+    "questions": [
+      "When is summer vacation",
+      "Summer leave details",
+      "Tell me about summer holidays",
+      "When summer vacation starts",
+      "How long summer vacation is",
+      "Do schools give summer break",
+      "Summer holiday info",
+      "Is summer time holiday",
+      "Explain summer vacation"
+    ],
+    "answer": "Summer vacation is a long annual break provided by schools, usually lasting several weeks depending on state guidelines."
+  },
+  {
+    "intent": "hostel_food_menu_details",
+    "questions": [
+      "What is hostel food menu",
+      "Tell me about hostel food",
+      "Hostel food details",
+      "What type of food hostel provides",
+      "Give information on hostel meals",
+      "Is hostel food good",
+      "What do students eat in hostel",
+      "Hostel mess menu please",
+      "Explain hostel food system"
+    ],
+    "answer": "Hostels generally provide a standard meal plan including breakfast, lunch, snacks, and dinner based on a fixed menu."
+  },
+  {
+    "intent": "hostel_food_timing_information",
+    "questions": [
+      "What are hostel food timings",
+      "Hostel meal timing please",
+      "When hostel gives food",
+      "Breakfast time in hostel",
+      "Lunch time in hostel",
+      "Dinner timing hostel",
+      "Tell me hostel food schedule",
+      "Hostel mess time",
+      "Explain hostel meal timing"
+    ],
+    "answer": "Hostel meals follow a fixed schedule, usually including morning breakfast, afternoon lunch, evening snacks, and night dinner."
+  },
+  {
+    "intent": "hostel_veg_nonveg_policy",
+    "questions": [
+      "Does hostel give veg food",
+      "Does hostel give non veg food",
+      "Is hostel veg only",
+      "Tell me about veg non veg in hostel",
+      "Food type in hostel veg or nonveg",
+      "What food policy hostel follows",
+      "Veg nonveg options hostel",
+      "Are non veg meals allowed",
+      "What type of meal is served"
+    ],
+    "answer": "Most hostels provide predominantly vegetarian meals, and availability of non-vegetarian options depends on school policy."
+  },
+  {
+    "intent": "hostel_snacks_information",
+    "questions": [
+      "Do hostel students get snacks",
+      "What snacks hostel provides",
+      "Tell me about evening snacks",
+      "Does hostel give tea snacks",
+      "Hostel snack timing",
+      "What type of snacks given",
+      "Is evening snacks available",
+      "Snack rules in hostel",
+      "Explain hostel snack system"
+    ],
+    "answer": "Hostels typically offer evening snacks or light refreshments as part of the meal schedule."
+  },
+  {
+    "intent": "hostel_drinking_water_facility",
+    "questions": [
+      "Is drinking water available in hostel",
+      "Tell me about hostel water facility",
+      "Hostel drinking water details",
+      "Does hostel provide purified water",
+      "Water system in hostel",
+      "Is clean water available",
+      "Hostel water safety",
+      "How hostel gives drinking water",
+      "Explain hostel water facility"
+    ],
+    "answer": "Hostels generally provide purified and safe drinking water for all residents."
+  },
+  {
+    "intent": "school_uniform_color_information",
+    "questions": [
+      "What is the school uniform color",
+      "Tell me school dress color",
+      "Uniform color details",
+      "What color dress students wear",
+      "Is there specific uniform color",
+      "School dress colour rule",
+      "Uniform shade information",
+      "Daily dress colour",
+      "Explain uniform color"
+    ],
+    "answer": "Schools usually prescribe a fixed uniform color to maintain discipline and uniformity."
+  },
+  {
+    "intent": "school_shoe_color_requirements",
+    "questions": [
+      "What is school shoe color",
+      "Tell me shoe color for students",
+      "School footwear rule",
+      "Which shoe colour allowed",
+      "Is black shoe required",
+      "Shoe uniform details",
+      "Footwear rule in school",
+      "Student shoe guidelines",
+      "Explain school shoe color"
+    ],
+    "answer": "Most schools require students to wear plain black shoes as a part of the uniform."
+  },
+  {
+    "intent": "dress_code_for_events",
+    "questions": [
+      "What dress for special events",
+      "Tell me event dress code",
+      "Event uniform details",
+      "Function dress information",
+      "What to wear for programs",
+      "Event day dress rules",
+      "Special occasion uniform",
+      "Dress code for ceremony",
+      "Explain event dress rule"
+    ],
+    "answer": "Schools may prescribe special dress codes for events, celebrations, or ceremonial days."
+  },
+  {
+    "intent": "sports_uniform_rules",
+    "questions": [
+      "What is sports dress code",
+      "Tell me PE uniform details",
+      "Sports day dress",
+      "Games period uniform",
+      "Is sports uniform separate",
+      "Sports dress color",
+      "PE class dress information",
+      "School sports uniform rule",
+      "Explain sports uniform"
+    ],
+    "answer": "A separate sports uniform is usually required for physical education periods and sports activities."
+  },
+  {
+    "intent": "hair_and_accessories_rules",
+    "questions": [
+      "What are hair rules in school",
+      "Tell about accessories rule",
+      "Can girls wear hair band",
+      "Student hairstyle rules",
+      "Jewellery allowed or not",
+      "Hair grooming rule",
+      "Accessories rule for students",
+      "School grooming guidelines",
+      "Explain hair and accessories rule"
+    ],
+    "answer": "Schools expect neat grooming and limit accessories to maintain discipline and uniformity."
+  },
+  {
+    "intent": "school_bus_route_information",
+    "questions": [
+      "Tell me bus routes",
+      "What routes school bus covers",
+      "Does school provide bus",
+      "Transport routes details",
+      "Bus availability info",
+      "Which areas bus goes",
+      "Route list for buses",
+      "School transport coverage",
+      "Explain bus route system"
+    ],
+    "answer": "School transport operates on selected routes based on student registrations and demand."
+  },
+  {
+    "intent": "transport_fee_details",
+    "questions": [
+      "What is transport fee",
+      "Tell me bus fee details",
+      "Transport charges information",
+      "How much bus fee",
+      "Do we have to pay bus fee",
+      "Fee for school bus",
+      "Transport payment details",
+      "Bus fee rules",
+      "Explain transport charges"
+    ],
+    "answer": "Transport fees vary depending on the distance and service structure set by the school."
+  },
+  {
+    "intent": "transport_pickup_drop_timing",
+    "questions": [
+      "What is pickup timing",
+      "Drop timing details",
+      "Tell me bus timing",
+      "Transport schedule info",
+      "At what time bus comes",
+      "Morning pickup time",
+      "Evening drop time",
+      "Transport timing rules",
+      "Explain bus schedule"
+    ],
+    "answer": "Pickup and drop timings are fixed based on route planning and may vary by location."
+  },
+  {
+    "intent": "transport_safety_measures",
+    "questions": [
+      "Is school bus safe",
+      "Safety in transport",
+      "Bus safety rules",
+      "Tell me about bus safety",
+      "Are teachers in bus",
+      "Transport safety guidelines",
+      "How bus ensures safety",
+      "Is attendant in bus",
+      "Explain safety measures"
+    ],
+    "answer": "Schools typically follow standard safety measures including attendants, monitoring, and regulated procedures."
+  },
+  {
+    "intent": "bus_registration_procedure",
+    "questions": [
+      "How to apply for bus",
+      "Transport registration process",
+      "Tell me bus application",
+      "How to join school bus",
+      "Bus registration details",
+      "Transport joining procedure",
+      "Apply for transport",
+      "Steps to take bus service",
+      "Explain bus registration"
+    ],
+    "answer": "Parents need to apply for transport during admission or through the office to confirm a bus seat based on route availability."
+  },
+  {
+    "intent": "school_residential_system",
+    "questions": [
+      "Is it residential school",
+      "Tell me about boarding school",
+      "Does school have hostel",
+      "Residential facility details",
+      "Boarding system information",
+      "Staying in school hostel",
+      "Boarding option available",
+      "Residential school features",
+      "Explain boarding facility"
+    ],
+    "answer": "Some schools provide residential facilities with supervision, study schedules, and accommodation."
+  },
+  {
+    "intent": "day_school_or_boarding_choice",
+    "questions": [
+      "Is school regular or boarding",
+      "Tell me difference day and boarding",
+      "Can student stay or go home",
+      "Boarding or day scholar option",
+      "What type of school this is",
+      "Day school details",
+      "Boarding school details",
+      "Is hostel compulsory",
+      "Explain day vs boarding"
+    ],
+    "answer": "Schools may offer both day scholar and boarding options depending on their infrastructure."
+  },
+  {
+    "intent": "boarding_supervision_details",
+    "questions": [
+      "Who supervises hostel",
+      "Is warden available",
+      "Boarding supervision details",
+      "Tell me about hostel staff",
+      "Hostel monitoring system",
+      "Who takes care of students",
+      "Supervision in boarding",
+      "Warden duty info",
+      "Explain hostel supervision"
+    ],
+    "answer": "Hostels are usually supervised by wardens and staff to ensure student safety and discipline."
+  },
+  {
+    "intent": "boarding_daily_schedule",
+    "questions": [
+      "What is hostel daily routine",
+      "Tell me warden schedule",
+      "Daily activities in hostel",
+      "Boarding day plan",
+      "Hostel timetable details",
+      "Study hour timing",
+      "Lights off timing",
+      "Daily hostel rules",
+      "Explain hostel routine"
+    ],
+    "answer": "Boarding students follow a structured daily routine including study time, meals, sports, and rest."
+  },
+  {
+    "intent": "boarding_parent_visit_rules",
+    "questions": [
+      "Can parents visit hostel",
+      "Visiting rules hostel",
+      "Parent visiting time",
+      "How parents meet students",
+      "Visit permission details",
+      "Boarding visitor guidelines",
+      "Allowed visiting days",
+      "Tell me about parent meet",
+      "Explain hostel visit rules"
+    ],
+    "answer": "Parent visits are usually allowed on designated days as per hostel guidelines."
+  },
+  {
+    "intent": "sports_facility_general_info",
+    "questions": [
+      "What sports facilities school has",
+      "Tell me about school sports",
+      "Sports ground details",
+      "Games available in school",
+      "Sports options for students",
+      "Which sports are taught",
+      "Sports activities info",
+      "Is PE available",
+      "Explain sports facility"
+    ],
+    "answer": "Schools typically offer basic sports facilities and physical education activities for overall development."
+  },
+  {
+    "intent": "playground_availability",
+    "questions": [
+      "Does school have playground",
+      "Playground size details",
+      "Tell me about playground",
+      "Outdoor games area",
+      "Playground facility info",
+      "Is play area available",
+      "Ground for sports",
+      "Play area rules",
+      "Explain playground facility"
+    ],
+    "answer": "Most schools provide a dedicated playground area for outdoor games and activities."
+  },
+  {
+    "intent": "indoor_games_facility",
+    "questions": [
+      "Do they have indoor games",
+      "Indoor sports details",
+      "Tell me about indoor games",
+      "Is indoor game hall available",
+      "Indoor badminton facility",
+      "Indoor sports options",
+      "Games inside school",
+      "Indoor activity room",
+      "Explain indoor games facility"
+    ],
+    "answer": "Schools may offer indoor game facilities depending on available space and infrastructure."
+  },
+  {
+    "intent": "sports_coaching_information",
+    "questions": [
+      "Is sports coaching available",
+      "Tell me about coaching classes",
+      "Does school provide sports training",
+      "Sports coaching facility",
+      "Training for games",
+      "Sports coaching details",
+      "When coaching happens",
+      "Games coaching rules",
+      "Explain sports coaching"
+    ],
+    "answer": "Some schools provide basic coaching or training under physical education instructors."
+  },
+  {
+    "intent": "sports_equipment_availability",
+    "questions": [
+      "Do students get sports equipment",
+      "Sports kit availability",
+      "Does school give balls and bats",
+      "Equipment details for sports",
+      "Games tools provided",
+      "Sports material info",
+      "Are sports items given",
+      "School sports gear",
+      "Explain equipment facility"
+    ],
+    "answer": "Schools usually supply essential sports equipment during PE periods and organized activities."
+  },
+  {
+    "intent": "extracurricular_activities_list",
+    "questions": [
+      "What extracurricular activities school has",
+      "Tell me activities list",
+      "Co curricular activities info",
+      "After class activities",
+      "Non academic activities",
+      "What clubs are available",
+      "Activity list for students",
+      "Creative activities in school",
+      "Explain extracurricular activities"
+    ],
+    "answer": "Schools conduct various extracurricular activities such as arts, music, clubs, competitions, and skill-based programs."
+  },
+  {
+    "intent": "arts_music_classes",
+    "questions": [
+      "Does school have music class",
+      "Is art class available",
+      "Tell me about music activities",
+      "Art and craft class info",
+      "Cultural activity details",
+      "Music training school",
+      "Art activities for students",
+      "Drawing class availability",
+      "Explain arts and music activities"
+    ],
+    "answer": "Many schools offer arts and music classes to encourage creativity and cultural learning."
+  },
+  {
+    "intent": "school_clubs_information",
+    "questions": [
+      "What clubs school has",
+      "Science club details",
+      "Tell me about clubs",
+      "Literary club info",
+      "Club activities in school",
+      "Students club list",
+      "Club participation rules",
+      "School club options",
+      "Explain club facility"
+    ],
+    "answer": "Schools may run different clubs such as science, literature, eco club, or hobby groups."
+  },
+  {
+    "intent": "competition_participation_details",
+    "questions": [
+      "Does school conduct competitions",
+      "Competition details",
+      "Tell me about contests",
+      "Inter school competition info",
+      "Student competition rules",
+      "Academic competitions",
+      "Sports competitions details",
+      "Competition activities list",
+      "Explain school competition policy"
+    ],
+    "answer": "Schools often organize competitions to improve student skills, confidence, and participation."
+  },
+  {
+    "intent": "extracurricular_timing_information",
+    "questions": [
+      "When extracurricular activities happen",
+      "Activity timing details",
+      "After school activity time",
+      "What time activities held",
+      "Activity hour info",
+      "Timing for clubs",
+      "Co curricular timing details",
+      "Activity schedule",
+      "Explain activity timing"
+    ],
+    "answer": "Extracurricular activities are usually conducted during allocated periods or after regular school hours."
+  },
+  {
+    "intent": "school_weekly_working_days",
+    "questions": [
+      "How many working days school has",
+      "School working days list",
+      "Tell me about weekly working",
+      "Which days school works",
+      "Weekly school schedule",
+      "Number of working days",
+      "Is Saturday working day",
+      "School weekly timetable",
+      "Explain working days"
+    ],
+    "answer": "Most schools follow a five or six-day week depending on institutional policy."
+  },
+  {
+    "intent": "daily_school_timetable",
+    "questions": [
+      "What is daily school timing",
+      "Tell me school timetable",
+      "When classes start",
+      "Daily schedule details",
+      "Lunch break timing",
+      "Assembly timing",
+      "School closing time",
+      "Class hour details",
+      "Explain daily timetable"
+    ],
+    "answer": "Schools operate on fixed daily timings including morning assembly, periods, breaks, and dispersal time."
+  },
+  {
+    "intent": "holiday_list_information",
+    "questions": [
+      "Give me holiday list",
+      "Holiday dates info",
+      "Tell me school leave list",
+      "When are holidays",
+      "Holiday calendar details",
+      "Annual holiday information",
+      "List of school holidays",
+      "School vacation list",
+      "Explain holiday schedule"
+    ],
+    "answer": "Schools publish an annual holiday list as part of the academic calendar provided to students."
+  },
+  {
+    "intent": "working_day_rules",
+    "questions": [
+      "What are rules for working days",
+      "Tell me working day rules",
+      "Attendance on working day",
+      "Mandatory attendance days",
+      "Rules for weekly working",
+      "Working day policy",
+      "School day rules",
+      "Is attendance compulsory",
+      "Explain working day rule"
+    ],
+    "answer": "Students are expected to attend scheduled working days as per the school’s attendance policy."
+  },
+  {
+    "intent": "half_day_information",
+    "questions": [
+      "Does school give half days",
+      "When is half day",
+      "Tell me half day rules",
+      "Half day timing details",
+      "Occasion half day info",
+      "Is there half day for events",
+      "Exam half day rule",
+      "Half day policy school",
+      "Explain half day system"
+    ],
+    "answer": "Half days may be declared on special occasions, exam days, or based on school decisions."
+  },
+  {
+    "intent": "annual_holiday_calendar_information",
+    "questions": [
+      "What is annual holiday calendar",
+      "Tell me about school holiday calendar",
+      "Holiday calendar details",
+      "When school publishes holiday list",
+      "Info on annual holidays",
+      "How to know school holidays",
+      "Holiday calendar release date",
+      "School leave calendar info",
+      "Explain annual holiday calendar"
+    ],
+    "answer": "Schools release an annual holiday calendar that outlines all holidays and vacation periods for the academic year."
+  },
+  {
+    "intent": "public_holidays_observed_by_school",
+    "questions": [
+      "Which public holidays school follows",
+      "Tell me public holidays list",
+      "Does school give public holidays",
+      "Public holiday rule in school",
+      "Government holiday followed",
+      "List public holidays school observes",
+      "Public leave information",
+      "Is public holiday leave given",
+      "Explain public holidays in school"
+    ],
+    "answer": "Schools usually observe major public and government-declared holidays as per state regulations."
+  },
+  {
+    "intent": "exam_time_holiday_information",
+    "questions": [
+      "Does school give holiday before exam",
+      "Tell me exam leave details",
+      "What is preparatory holiday",
+      "Do students get leave during exams",
+      "Exam break information",
+      "Holiday between exams",
+      "Prep holiday rule",
+      "Exam time leave info",
+      "Explain exam holiday"
+    ],
+    "answer": "Some schools provide preparatory holidays before or between exams depending on their academic schedule."
+  },
+  {
+    "intent": "special_event_holiday_policy",
+    "questions": [
+      "Does school declare holiday for events",
+      "Tell me event holiday policy",
+      "Holiday for school function",
+      "Do events cause holiday",
+      "Special event leave information",
+      "Holiday after big events",
+      "Event based holiday rule",
+      "Function day holiday details",
+      "Explain event holiday"
+    ],
+    "answer": "Schools may declare holidays for special events or occasions depending on their schedule and management decisions."
+  },
+  {
+    "intent": "unexpected_holiday_guidelines",
+    "questions": [
+      "How school announces sudden holiday",
+      "Unexpected holiday rule",
+      "Holiday due to rain or strike",
+      "Emergency holiday information",
+      "Tell me sudden leave rules",
+      "How students know emergency holidays",
+      "Unexpected leave details",
+      "School closure announcement",
+      "Explain unexpected holiday policy"
+    ],
+    "answer": "Unexpected holidays may be announced due to weather or emergencies, and schools inform parents through official communication channels."
+  },
+  {
+    "intent": "after_school_study_hours",
+    "questions": [
+      "Is there after school study hour",
+      "Tell me about study hour",
+      "Do students stay for study",
+      "Study hour timing",
+      "After class study info",
+      "Supervised study program",
+      "Evening study details",
+      "Compulsory study hour rule",
+      "Explain study hour system"
+    ],
+    "answer": "Some schools provide supervised study hours after regular classes for academic support."
+  },
+  {
+    "intent": "after_school_tuition_support",
+    "questions": [
+      "Does school give extra coaching",
+      "Tell me about tuition classes",
+      "Is after school coaching available",
+      "Extra academic support info",
+      "Tuition timing details",
+      "After school help classes",
+      "Teaching support after school",
+      "Extra class availability",
+      "Explain extra coaching"
+    ],
+    "answer": "Schools may offer additional coaching or academic support sessions after regular hours."
+  },
+  {
+    "intent": "hobby_classes_after_school",
+    "questions": [
+      "Are there hobby classes",
+      "After school hobby activities",
+      "Music or dance class after school",
+      "Hobby class timing",
+      "Tell me hobby activity info",
+      "Skill classes after school",
+      "Drawing classes after hours",
+      "Craft class availability",
+      "Explain hobby classes"
+    ],
+    "answer": "Some schools conduct hobby classes after school to encourage creative learning."
+  },
+  {
+    "intent": "sports_practice_after_school",
+    "questions": [
+      "Is there sports practice after school",
+      "Tell me about sports practice",
+      "Evening sports coaching info",
+      "After school games practice",
+      "Sports training timing",
+      "Practice session details",
+      "Sports activity after class",
+      "Games practice rules",
+      "Explain sports practice"
+    ],
+    "answer": "Sports practice sessions may be held after school for teams and active participants."
+  },
+  {
+    "intent": "after_school_engagement_policy",
+    "questions": [
+      "What are after school activities",
+      "Tell me after school engagement",
+      "Student stay back rules",
+      "Programs after school",
+      "Evening activities info",
+      "Does school allow after hour stay",
+      "After class engagement details",
+      "Student activity policy",
+      "Explain after school policy"
+    ],
+    "answer": "After-school engagements vary and may include study hours, sports, clubs, or supervised programs depending on school policy."
   }
 ]

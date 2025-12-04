@@ -1,4 +1,4 @@
-// chat.js — FINAL VERSION (Animation Safe + "list all" behaviour)
+// chat.js — FINAL AI READY VERSION (Intent Routing + Help + Name + Clean UI)
 (function () {
   const form = document.getElementById("chat-form");
   const input = document.getElementById("chat-input");
@@ -14,41 +14,66 @@
   function isGreeting(text) {
     const t = text.toLowerCase().trim();
     const greetings = [
-      "hi",
-      "hello",
-      "hey",
-      "hai",
-      "hola",
-      "greetings",
-      "good morning",
-      "good evening",
-      "good afternoon",
-      "good day",
-      "what's up",
-      "sup",
-      "yo",
+      "hi", "hello", "hey", "hai", "hola", "greetings",
+      "good morning", "good evening", "good afternoon",
+      "good day", "what's up", "sup", "yo"
     ];
     return greetings.some((g) => t === g || t.startsWith(g));
   }
 
-  function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+  function isHelp(text) {
+    const t = text.toLowerCase().trim();
+    return (
+      t === "help" ||
+      t === "menu" ||
+      t === "guide" ||
+      t === "options" ||
+      t.includes("how to use") ||
+      t.includes("what can you do") ||
+      t.includes("what are your features")
+    );
   }
 
+  function isNameQuery(text) {
+    const t = text.toLowerCase().trim();
+    return (
+      t.includes("your name") ||
+      t.includes("who are you") ||
+      t === "name" ||
+      t.includes("what should i call you") ||
+      t.includes("who am i chatting with")
+    );
+  }
+
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  function estimateDelay(textLength, speed) {
+    const ms = textLength * speed * 0.6;
+    return Math.max(600, Math.min(ms, 5000));
+  }
+
+  /* ==========================================================
+     SEND TO BACKEND (includes panoNames + projectNames)
+  ========================================================== */
   async function sendToBackend(question) {
     const url = `${window.ChatbotConfig.API_BASE_URL}/chat`;
 
     try {
+      const body = {
+        question,
+        panoNames: window.VistaPanos || [],
+        projectNames: window.VistaProjects || [],
+      };
+
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify(body),
       });
 
       if (!res.ok) {
-        const txt = await res.text();
-        console.error("[Chat] Backend error:", res.status, txt);
-        throw new Error(`Backend error: ${res.status}`);
+        console.error("[Chat] Backend error:", res.status);
+        throw new Error("Backend error");
       }
 
       return await res.json();
@@ -58,14 +83,8 @@
     }
   }
 
-  // Rough estimate so list appears after message animation
-  function estimateDelay(textLength, speed) {
-    const ms = textLength * speed * 0.6; // 60% of total typing time
-    return Math.max(600, Math.min(ms, 5000)); // between 0.6s and 5s
-  }
-
   /* ==========================================================
-     UI: PANORAMA + PROJECT LIST (HTML)
+     LIST-ALL UI
   ========================================================== */
   function createPanoProjectListHTML(panos, projects) {
     let html = `
@@ -73,185 +92,72 @@
         <h3>Available Panoramas</h3>
         <div class="tour-grid">
     `;
-
-    // ✅ IMPORTANT CHANGE: no inline onclick here
     panos.forEach((p) => {
-      html += `<button class="tour-btn">${p}</button>`;
+      html += `<button class="tour-btn" data-pano="${p}">${p}</button>`;
     });
 
     html += `
         </div>
-
         <h3>Available Projects</h3>
         <div class="tour-grid">
     `;
-
-    // Projects keep inline onclick (they were already working fine)
     projects.forEach((p) => {
-      html += `<button class="tour-btn" onclick="window.Vista.openProject('${p.url}')">${p.title}</button>`;
+      html += `<button class="tour-btn" data-project="${p.url}">${p.title}</button>`;
     });
 
     html += `
         </div>
       </div>
     `;
-
     return html;
   }
 
-  /* ==========================================================
-     3D-VISTA INTEGRATION
-  ========================================================== */
-  async function handleTourActions(text) {
-    if (!window.Vista) return false;
+  async function handleListAll() {
+    window.ChatUI.showTypingIndicator();
+    await sleep(400);
 
-    const t = text.toLowerCase().trim();
-    const intent = window.Vista.detectTourIntent(text);
+    const msg = "Here are all the panoramas and projects available.";
+    const speed = 20;
+    window.ChatUI.typeBotMessage(msg, speed);
 
-    /* -----------------------------------------
-       🟦 HELP — ONLY HELP TEXT (no auto list)
-    ----------------------------------------- */
-    const helpTriggers = [
-      "help",
-      "guide",
-      "how to use",
-      "options",
-      "what can you do",
-      "how do i use",
-      "show commands",
-      "instructions",
-    ];
+    const delay = estimateDelay(msg.length, speed);
 
-    if (helpTriggers.some((k) => t.includes(k))) {
-      const helpText = `
-👋 **Hello! I'm your Montfort Virtual Assistant.**
-I help with **School Information** and **3D Virtual Tour Navigation**.
+    setTimeout(async () => {
+      const panos = await window.Vista.loadPanoLabels();
+      const projects = await window.Vista.loadProjects();
+      const html = createPanoProjectListHTML(panos, projects);
+      window.ChatUI.createMessageRow("bot", html, true);
+    }, delay);
 
----
-
-📘 **SCHOOL INFORMATION**  
-Ask me about:  
-- Timings  
-- Admissions & Fees  
-- Hostel  
-- Transport  
-- Canteen  
-- Labs  
-- Sports  
-
----
-
-🌍 **VIRTUAL TOUR CONTROL**  
-Try:  
-- "go to library"  
-- "open auditorium"  
-- "show playground"  
-
----
-
-🔄 **SWITCH PROJECT**  
-Use:  
-- "open project CBSE"  
-- "open project St Mary's"  
-
----
-
-📋 **WANT FULL LIST?**  
-Type "list all pano and projects" or "list all"  
-to see every panorama and project link.
-`;
-
-      window.ChatUI.showTypingIndicator();
-      await sleep(500);
-      window.ChatUI.typeBotMessage(helpText, 15);
-      return true;
-    }
-
-    /* -----------------------------------------
-       🟦 LIST ALL PANOS + PROJECTS
-    ----------------------------------------- */
-    const isListAll =
-      t === "list all" ||
-      t === "listall" ||
-      t === "show all" ||
-      t.includes("list all pano") ||
-      t.includes("list all panos") ||
-      t.includes("list all panoramas") ||
-      t.includes("list all project") ||
-      t.includes("list all pano and projects");
-
-    if (isListAll) {
-      window.ChatUI.showTypingIndicator();
-      await sleep(400);
-
-      const msg = "Here are all available panoramas and projects:";
-      const speed = 20;
-      window.ChatUI.typeBotMessage(msg, speed);
-
-      const delay = estimateDelay(msg.length, speed);
-
-      setTimeout(async () => {
-        const panos = await window.Vista.loadPanoLabels();
-        const projects = await window.Vista.loadProjects();
-        const listHTML = createPanoProjectListHTML(panos, projects);
-        // ⭐ isHTML = true so ui.js will attach pano click handlers
-        window.ChatUI.createMessageRow("bot", listHTML, true);
-      }, delay);
-
-      return true;
-    }
-
-    /* -----------------------------------------
-       🟦 OPEN PANORAMA (typed command)
-    ----------------------------------------- */
-    if (intent === "pano") {
-      window.ChatUI.showTypingIndicator();
-      const match = await window.Vista.findMatchingPano(text);
-      await sleep(400);
-
-      if (match) {
-        // Direct open via Vista (works for typed "go to library")
-        window.Vista.openPanorama(match);
-        window.ChatUI.typeBotMessage(`Opening **${match}** panorama 🔍`, 20);
-      } else {
-        window.ChatUI.typeBotMessage(
-          `I couldn't find that panorama.\n\n➡️ Type **"list all pano and projects"** to view everything.`,
-          20
-        );
-      }
-
-      return true;
-    }
-
-    /* -----------------------------------------
-       🟦 OPEN PROJECT (typed command)
-    ----------------------------------------- */
-    if (intent === "project") {
-      window.ChatUI.showTypingIndicator();
-      const match = await window.Vista.findMatchingProject(text);
-      await sleep(400);
-
-      if (match) {
-        window.Vista.openProject(match.url);
-        window.ChatUI.typeBotMessage(
-          `Opening project **${match.title}** 🌐`,
-          20
-        );
-      } else {
-        window.ChatUI.typeBotMessage(
-          `Project not found.\n\n➡️ Type **"list all pano and projects"** to see full list.`,
-          20
-        );
-      }
-
-      return true;
-    }
-
-    return false;
+    return true;
   }
 
+/* ==========================================================
+   PROCESS AI RESPONSE FROM BACKEND
+========================================================== */
+async function handleAIResponse(data) {
+  // OPEN PANORAMA
+  if (data.intent === "pano") {
+    await sleep(300);
+    window.Vista.openPanorama(data.target);
+    window.ChatUI.typeBotMessage(`Opening ${data.target} panorama`, 22);
+    return true;
+  }
+
+  // OPEN PROJECT
+  if (data.intent === "project") {
+    await sleep(300);
+    window.Vista.openProject(data.target);
+    window.ChatUI.typeBotMessage(`Opening project: ${data.target}`, 22);
+    return true;
+  }
+
+  return false;
+}
+
+
   /* ==========================================================
-     SCHOOL CHATBOT
+     MAIN MESSAGE HANDLER
   ========================================================== */
   async function handleUserMessage(text) {
     const trimmed = text.trim();
@@ -259,28 +165,80 @@ to see every panorama and project link.
 
     window.ChatUI.createMessageRow("user", trimmed);
 
-    // Greetings
+    const t = trimmed.toLowerCase();
+
+    /* -----------------------------------------
+       GREETINGS
+    ----------------------------------------- */
     if (isGreeting(trimmed)) {
       window.ChatUI.showTypingIndicator();
-      await sleep(700);
+      await sleep(600);
+
       window.ChatUI.typeBotMessage(
-        "Hi there! 👋 Welcome to Montfort ICSE!\n\nI can help you with:\n• Admissions & fees\n• Hostel\n• Transport\n• Academics\n• School timings\n• Virtual Tour navigation\n\nFor official details visit: https://montforticse.in/",
-        25
+        "Hi there! Welcome to the Montfort ICSE Assistant.\n\nYou can ask about:\n• Admissions\n• Fees\n• Hostel\n• Transport\n• School timings\n• Rules\n• Or navigate panoramas like: go to boys hostel",
+        22
       );
       return;
     }
 
-    // 3D-Vista first
-    const handled = await handleTourActions(trimmed);
-    if (handled) return;
+    /* -----------------------------------------
+       HELP
+    ----------------------------------------- */
+    if (isHelp(trimmed)) {
+      window.ChatUI.showTypingIndicator();
+      await sleep(500);
 
-    // School backend
+      window.ChatUI.typeBotMessage(
+        "Here’s what I can assist you with:\n\n• Admissions & Fees\n• Hostel & Transport\n• School timings\n• Rules & Facilities\n• Virtual tour navigation\n• Show all panoramas and projects\n\nAsk anything anytime.",
+        22
+      );
+      return;
+    }
+
+    /* -----------------------------------------
+       NAME QUERY
+    ----------------------------------------- */
+    if (isNameQuery(trimmed)) {
+      window.ChatUI.showTypingIndicator();
+      await sleep(500);
+
+      window.ChatUI.typeBotMessage(
+        "I'm your Montfort ICSE Assistant, here to guide you anytime.",
+        22
+      );
+      return;
+    }
+
+    /* -----------------------------------------
+       LIST ALL
+    ----------------------------------------- */
+    const isList =
+      t === "list all" ||
+      t === "show all" ||
+      t === "listall" ||
+      t.includes("list all pano") ||
+      t.includes("list all panos") ||
+      t.includes("list all project") ||
+      t.includes("list all panorama") ||
+      t.includes("list all tours");
+
+    if (isList) {
+      return await handleListAll();
+    }
+
+    /* -----------------------------------------
+       SEND TO BACKEND
+    ----------------------------------------- */
     try {
       window.ChatUI.showTypingIndicator();
       const data = await sendToBackend(trimmed);
+
+      const handled = await handleAIResponse(data);
+      if (handled) return;
+
       const answer =
         data?.answer ||
-        "I'm not able to answer that right now. Please visit our official website.";
+        "I'm not able to answer that right now. Please try again.";
 
       await sleep(400);
       window.ChatUI.typeBotMessage(answer, 20);
@@ -289,7 +247,7 @@ to see every panorama and project link.
       window.ChatUI.hideTypingIndicator();
       window.ChatUI.createMessageRow(
         "bot",
-        "I'm having trouble connecting. Please try again later."
+        "I’m having trouble connecting right now. Please try again later."
       );
     }
   }
@@ -304,13 +262,12 @@ to see every panorama and project link.
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    const value = input.value;
-    if (!value.trim()) return;
+    const val = input.value;
+    if (!val.trim()) return;
 
     input.value = "";
     input.style.height = "auto";
-
-    handleUserMessage(value);
+    handleUserMessage(val);
   });
 
   input.addEventListener("keydown", (e) => {
@@ -320,7 +277,5 @@ to see every panorama and project link.
     }
   });
 
-  console.log(
-    "Montfort ICSE Chatbot initialized with 3D-Vista + list-all support!"
-  );
+  console.log("%c[Chat] AI-ready chat.js loaded successfully", "color:#2962FF; font-weight:bold;");
 })();

@@ -1,4 +1,4 @@
-// ui.js — FINAL PRODUCTION VERSION (Welcome + HTML buttons + Pano Loading)
+// ui.js — FINAL VERSION (Fixed Typing, Clean UI, Safe Buttons)
 (function () {
   const widget = document.getElementById("chat-widget");
   const toggleBtn = document.getElementById("chat-toggle");
@@ -54,7 +54,6 @@
     const row = document.createElement("div");
     row.className = `message-row ${role}`;
 
-    /* Avatar */
     const avatar = document.createElement("div");
     avatar.className = "message-avatar";
 
@@ -66,32 +65,27 @@
           <circle cx="12" cy="7" r="4"></circle>
         </svg>`;
     } else {
-      avatar.innerHTML = `<img src="assets/logo.svg" alt="Montfort ICSE">`;
+      avatar.innerHTML = `<img src="assets/logo.svg" alt="Bot">`;
     }
 
-    /* Content */
     const content = document.createElement("div");
     content.className = "message-content";
 
     const bubble = document.createElement("div");
     bubble.className = "message-bubble";
 
-    /* HTML bubbles (panorama + project lists) */
     if (isHTML) {
       bubble.innerHTML = text;
       bubble.classList.add("html-message");
 
-      /* Panorama Buttons */
       bubble.querySelectorAll(".tour-btn").forEach((btn) => {
         const label = btn.textContent.trim();
 
         btn.addEventListener("click", () => {
-          console.log("[UI] PANO BUTTON CLICK:", label);
+          console.log("[UI] PANO/PROJECT BUTTON:", label);
 
-          if (window.tour && typeof window.tour.setMediaByName === "function") {
+          if (window.tour?.setMediaByName) {
             window.tour.setMediaByName(label);
-          } else {
-            alert("Panorama viewer not ready:\n" + label);
           }
         });
       });
@@ -99,13 +93,13 @@
       bubble.innerHTML = linkify(text);
     }
 
-    /* Time */
     const time = document.createElement("div");
     time.className = "message-time";
     time.textContent = getCurrentTime();
 
     content.appendChild(bubble);
     content.appendChild(time);
+
     row.appendChild(avatar);
     row.appendChild(content);
     messagesEl.appendChild(row);
@@ -130,7 +124,7 @@
 
     row.innerHTML = `
       <div class="typing-avatar">
-        <img src="assets/logo.svg" alt="Montfort ICSE">
+        <img src="assets/logo.svg" alt="Bot">
       </div>
       <div class="typing-bubble">
         <div class="typing-indicator">
@@ -149,7 +143,7 @@
   }
 
   /* ==========================================================
-     TYPE BOT MESSAGE
+     FIXED TYPEWRITER — NO MISSING LETTERS (FINAL VERSION)
   ========================================================== */
   async function typeBotMessage(text, speed = 25) {
     hideTypingIndicator();
@@ -169,22 +163,27 @@
     const bubble = row.querySelector(".message-bubble");
 
     let i = 0;
-    function step() {
+
+    function type() {
       if (i < text.length) {
-        bubble.innerHTML = linkify(text.substring(0, i++));
+        bubble.textContent = text.substring(0, i + 1);
+        i++;
         scrollToBottom();
-        setTimeout(step, speed);
+        setTimeout(type, speed);
       } else {
+        bubble.textContent = text; // FINAL SAFE WRITE
         bubble.classList.remove("typing-text");
         setInputDisabled(false);
+        scrollToBottom();
         if (window.ChatSounds) window.ChatSounds.delivered();
       }
     }
-    step();
+
+    type();
   }
 
   /* ==========================================================
-     WELCOME MESSAGE ON FIRST OPEN
+     OPEN/CLOSE WIDGET
   ========================================================== */
   toggleBtn.addEventListener("click", () => {
     widget.classList.remove("hidden");
@@ -195,10 +194,8 @@
       widget.dataset.welcomeShown = "1";
 
       const welcome =
-        "Hello! 👋 I'm the Montfort ICSE Virtual Assistant.\n\n" +
-        "You can ask about:\n" +
-        "• Admissions\n• Fees\n• Hostel\n• Transport\n• Academics\n" +
-        "• 3D Virtual Tour navigation\n\n" +
+        "Hello 👋 I'm the Montfort ICSE Virtual Assistant.\n\n" +
+        "You can ask about:\n• Admissions\n• Fees\n• Hostel\n• Transport\n• 3D Tour Navigation\n\n" +
         "Type **list all** to see all panoramas & projects.";
 
       showTypingIndicator();
@@ -211,10 +208,11 @@
   closeBtn.addEventListener("click", () => {
     widget.classList.add("hidden");
     widget.setAttribute("aria-hidden", "true");
-    toggleBtn.style.display = "block";
+    toggleBtn.style.display = "flex";
     if (window.ChatSounds) window.ChatSounds.close();
   });
 
+  /* Click outside closes widget */
   document.addEventListener("click", (e) => {
     if (
       !widget.classList.contains("hidden") &&
@@ -222,19 +220,18 @@
       !toggleBtn.contains(e.target)
     ) {
       widget.classList.add("hidden");
-      toggleBtn.style.display = "block";
+      toggleBtn.style.display = "flex";
     }
   });
 
- /* Escape closes chat */
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && !widget.classList.contains("hidden")) {
       widget.classList.add("hidden");
-      toggleBtn.style.display = "block";
+      toggleBtn.style.display = "flex";
     }
   });
 
-  /* EXPORT */
+  /* EXPORT API */
   window.ChatUI = {
     createMessageRow,
     showTypingIndicator,

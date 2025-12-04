@@ -1,9 +1,10 @@
-// js/vista.js — FINAL PRODUCTION VERSION
+// js/vista.js — FINAL AI-READY PRODUCTION VERSION (AUTO-LOAD FIXED)
 (function () {
   console.log("%c[VISTA] vista.js loaded", "color:#00C853; font-weight:bold;");
 
   /* ======================================================
      LOAD PANORAMA LABELS (locale/en.txt)
+     + expose window.VistaPanos for backend AI
   ====================================================== */
   async function loadPanoLabels() {
     try {
@@ -19,16 +20,20 @@
         .filter(Boolean);
 
       console.log("[VISTA] Loaded panoramas:", labels.length);
+
+      // ⭐ Expose globally
+      window.VistaPanos = labels;
+
       return labels;
     } catch (err) {
       console.error("[VISTA] Failed to load pano labels:", err);
+      window.VistaPanos = [];
       return [];
     }
   }
 
   /* ======================================================
-     OPEN PANORAMA IN VIEWER
-     (UI.js also directly calls tour.setMediaByName)
+     OPEN PANORAMA
   ====================================================== */
   function openPanorama(label) {
     try {
@@ -45,42 +50,62 @@
 
   /* ======================================================
      LOAD PROJECT LINKS FROM Links.json
+     + expose window.VistaProjects for backend AI
   ====================================================== */
   async function loadProjects() {
     try {
       const res = await fetch("Links.json");
       const json = await res.json();
-      return json.projects || [];
+
+      const projects = json.projects || [];
+
+      // ⭐ Expose only titles to backend AI
+      window.VistaProjects = projects.map((p) => p.title);
+
+      console.log("[VISTA] Loaded projects:", window.VistaProjects.length);
+
+      return projects;
     } catch (err) {
       console.error("[VISTA] Failed to load projects:", err);
+      window.VistaProjects = [];
       return [];
     }
   }
 
   /* ======================================================
-     OPEN PROJECT IN NEW TAB
+     OPEN PROJECT (by URL OR by Title)
   ====================================================== */
-  function openProject(url) {
+  function openProject(urlOrTitle) {
     try {
-      window.open(url, "_blank");
-      console.log("[VISTA] Opening project:", url);
+      if (typeof urlOrTitle === "string" && urlOrTitle.startsWith("http")) {
+        console.log("[VISTA] Opening project URL:", urlOrTitle);
+        window.open(urlOrTitle, "_blank");
+        return;
+      }
+
+      loadProjects().then((projects) => {
+        const match = projects.find((p) => p.title === urlOrTitle);
+        if (match) {
+          console.log("[VISTA] Opening project:", match.title, "→", match.url);
+          window.open(match.url, "_blank");
+        } else {
+          console.warn("[VISTA] Project not found:", urlOrTitle);
+        }
+      });
     } catch (err) {
       console.error("[VISTA] Failed to open project:", err);
     }
   }
 
   /* ======================================================
-     FUZZY MATCH
+     FUZZY MATCH HELPERS (used for UI lists)
   ====================================================== */
   const fuzzyMatch = (target, userText) => {
-    const a = target.toLowerCase();
-    const b = userText.toLowerCase();
+    const a = String(target || "").toLowerCase();
+    const b = String(userText || "").toLowerCase();
     return a.includes(b) || b.includes(a);
   };
 
-  /* ======================================================
-     FIND PANORAMA MATCH (exact or fuzzy)
-  ====================================================== */
   async function findMatchingPano(userText) {
     const panos = await loadPanoLabels();
     if (!panos.length) return null;
@@ -93,9 +118,6 @@
     return panos.find((p) => fuzzyMatch(p, userText)) || null;
   }
 
-  /* ======================================================
-     FIND PROJECT MATCH
-  ====================================================== */
   async function findMatchingProject(userText) {
     const projects = await loadProjects();
     if (!projects.length) return null;
@@ -105,33 +127,23 @@
   }
 
   /* ======================================================
-     DETECT TOUR INTENT (pano / project / school)
+     AUTO-LOAD PANOS & PROJECTS ON PAGE LOAD
+     ⭐ IMPORTANT FIX ⭐
   ====================================================== */
-  function detectTourIntent(text) {
-    const t = text.toLowerCase();
+  window.VistaPanos = [];
+  window.VistaProjects = [];
 
-    const panoWords = [
-      "open",
-      "go to",
-      "goto",
-      "show",
-      "take me to",
-      "view",
-      "panorama",
-      "pano",
-    ];
-    if (panoWords.some((x) => t.includes(x))) return "pano";
+  (async () => {
+    console.log("[VISTA] Pre-loading panoramas & projects…");
 
-    const projectWords = [
-      "open project",
-      "switch project",
-      "load project",
-      "search project",
-    ];
-    if (projectWords.some((x) => t.includes(x))) return "project";
+    await loadPanoLabels();   // loads → window.VistaPanos
+    await loadProjects();     // loads → window.VistaProjects
 
-    return "school";
-  }
+    console.log("[VISTA] AUTOLOAD COMPLETE:", {
+      panos: window.VistaPanos.length,
+      projects: window.VistaProjects.length
+    });
+  })();
 
   /* ======================================================
      EXPORT PUBLIC API
@@ -143,6 +155,5 @@
     openProject,
     findMatchingPano,
     findMatchingProject,
-    detectTourIntent,
   };
 })();

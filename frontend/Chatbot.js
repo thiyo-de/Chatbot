@@ -1,6 +1,7 @@
+// chatbot.js — FINAL STABLE VERSION (Correct Load Order + AI Ready)
 (function () {
   /* ================================================================
-     CREATE: <link rel="stylesheet">
+       LOAD CSS
   ================================================================== */
   const style = document.createElement("link");
   style.rel = "stylesheet";
@@ -8,13 +9,13 @@
   document.head.appendChild(style);
 
   /* ================================================================
-     MAIN CONTAINER
+       MAIN CONTAINER
   ================================================================== */
   const main = document.createElement("main");
   main.className = "page-content";
 
   /* ================================================================
-     FLOATING ACTION BUTTON
+       FLOATING BUTTON
   ================================================================== */
   const chatToggle = document.createElement("button");
   chatToggle.id = "chat-toggle";
@@ -27,19 +28,18 @@
   `;
 
   /* ================================================================
-     CHAT WIDGET SECTION
+       CHAT WIDGET
   ================================================================== */
   const chatWidget = document.createElement("section");
   chatWidget.id = "chat-widget";
   chatWidget.className = "chat-widget hidden";
   chatWidget.setAttribute("aria-hidden", "true");
 
-  /* HEADER */
   chatWidget.innerHTML = `
     <header class="chat-header">
       <div class="chat-title">
         <div class="chat-avatar">
-          <img src="assets/logo.svg" alt="Montfort ICSE" width="24" height="24"/>
+          <img src="assets/logo.svg" alt="Montfort ICSE" width="40" height="40"/>
         </div>
         <div class="chat-title-text">
           <h2>Montfort ICSE Assistant</h2>
@@ -74,7 +74,7 @@
   `;
 
   /* ================================================================
-     SOUNDS
+       SOUNDS
   ================================================================== */
   const soundTyping = document.createElement("audio");
   soundTyping.id = "typing-sound";
@@ -97,7 +97,7 @@
   soundClose.preload = "auto";
 
   /* ================================================================
-     APPEND EVERYTHING
+       APPEND DOM ELEMENTS
   ================================================================== */
   main.appendChild(chatToggle);
   main.appendChild(chatWidget);
@@ -109,22 +109,36 @@
   document.body.appendChild(soundClose);
 
   /* ================================================================
-     LOAD SCRIPT FILES (config, sound, ui, chat, vista)
+       SCRIPT LOADER (with Safe Logging)
   ================================================================== */
   function loadScript(src) {
     return new Promise((resolve) => {
       const s = document.createElement("script");
       s.src = src;
-      s.onload = resolve;
+      s.onload = () => {
+        console.log(`[Chatbot Loader] Loaded: ${src}`);
+        resolve();
+      };
+      s.onerror = () => {
+        console.error(`[Chatbot Loader] FAILED: ${src}`);
+        resolve(); // Continue loading others even if one fails
+      };
       document.body.appendChild(s);
     });
   }
 
+  /* ================================================================
+       LOAD FILES IN PERFECT ORDER
+  ================================================================== */
   (async function loadAllScripts() {
-    await loadScript("js/config.js");
-    await loadScript("js/sound.js");
-    await loadScript("js/ui.js");
-    await loadScript("js/chat.js");
-    await loadScript("js/vista.js");
+    console.log("%c[Chatbot Loader] Starting…", "color:#0099ff; font-weight:bold;");
+
+    await loadScript("js/config.js");    // ChatbotConfig
+    await loadScript("js/sound.js");     // Sound controls
+    await loadScript("js/ui.js");        // Chat UI system
+    await loadScript("js/vista.js");     // Vista + loads panoramas/projects
+    await loadScript("js/chat.js");      // AI + backend + intent engine
+
+    console.log("%c[Chatbot Loader] All scripts loaded successfully!", "color:#00C853; font-weight:bold;");
   })();
 })();
